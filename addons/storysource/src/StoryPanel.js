@@ -228,7 +228,7 @@ forceReRender();
       kind,
     } = this.state;
     const indexJs = '/storysource/bootstrapper.js';
-    const storybookVersion = '5.0.0-rc.8';
+    const storybookVersion = 'latest';
     const setOfDependencies = Array.from(
       new Set(
         (dependencies || []).concat(
