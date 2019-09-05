@@ -6,9 +6,19 @@ import { STORY_RENDERED } from '@storybook/core-events';
 import { ActionBar, Icons, ScrollArea } from '@storybook/components';
 
 import { AxeResults, Result } from 'axe-core';
+import { API } from '@storybook/api';
+import { Provider } from 'react-redux';
 import { Report } from './Report';
 import { Tabs } from './Tabs';
 import { EVENTS } from '../constants';
+
+import store, { clearElements } from '../redux-config';
+
+export enum RuleType {
+  VIOLATION,
+  PASS,
+  INCOMPLETION,
+}
 
 const Icon = styled(Icons)(
   {
@@ -24,17 +34,30 @@ const Icon = styled(Icons)(
       : {}
 );
 
-const Passes = styled.span(({ theme }) => ({
+const Passes = styled.span<{}>(({ theme }) => ({
   color: theme.color.positive,
 }));
 
-const Violations = styled.span(({ theme }) => ({
+const Violations = styled.span<{}>(({ theme }) => ({
   color: theme.color.negative,
 }));
 
-const Incomplete = styled.span(({ theme }) => ({
+const Incomplete = styled.span<{}>(({ theme }) => ({
   color: theme.color.warning,
 }));
+
+const Loader = styled(({ className }) => (
+  <div className={className}>
+    <Icon inline icon="sync" status="running" /> Please wait while the accessibility scan is running
+    ...
+  </div>
+))({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+});
+Loader.displayName = 'Loader';
 
 interface A11YPanelState {
   status: string;
@@ -45,11 +68,7 @@ interface A11YPanelState {
 
 interface A11YPanelProps {
   active: boolean;
-  api: {
-    on(event: string, callback: (data: any) => void): void;
-    off(event: string, callback: (data: any) => void): void;
-    emit(event: string): void;
-  };
+  api: API;
 }
 
 export class A11YPanel extends Component<A11YPanelProps, A11YPanelState> {
@@ -72,13 +91,14 @@ export class A11YPanel extends Component<A11YPanelProps, A11YPanelState> {
     const { active } = this.props;
 
     if (!prevProps.active && active) {
+      // removes all elements from the redux map in store from the previous panel
+      store.dispatch(clearElements());
       this.request();
     }
   }
 
   componentWillUnmount() {
     const { api } = this.props;
-
     api.off(STORY_RENDERED, this.request);
     api.off(EVENTS.RESULT, this.onUpdate);
   }
@@ -114,6 +134,8 @@ export class A11YPanel extends Component<A11YPanelProps, A11YPanelState> {
         },
         () => {
           api.emit(EVENTS.REQUEST);
+          // removes all elements from the redux map in store from the previous panel
+          store.dispatch(clearElements());
         }
       );
     }
@@ -142,30 +164,59 @@ export class A11YPanel extends Component<A11YPanelProps, A11YPanelState> {
 
     return active ? (
       <Fragment>
-        <ScrollArea vertical horizontal>
-          <Tabs
-            key="tabs"
-            tabs={[
-              {
-                label: <Violations>{violations.length} Violations</Violations>,
-                panel: (
-                  <Report passes={false} items={violations} empty="No a11y violations found." />
-                ),
-              },
-              {
-                label: <Passes>{passes.length} Passes</Passes>,
-                panel: <Report passes items={passes} empty="No a11y check passed." />,
-              },
-              {
-                label: <Incomplete>{incomplete.length} Incomplete</Incomplete>,
-                panel: (
-                  <Report passes={false} items={incomplete} empty="No a11y incomplete found." />
-                ),
-              },
-            ]}
+        <Provider store={store}>
+          {status === 'running' ? (
+            <Loader />
+          ) : (
+            <ScrollArea vertical horizontal>
+              <Tabs
+                key="tabs"
+                tabs={[
+                  {
+                    label: <Violations>{violations.length} Violations</Violations>,
+                    panel: (
+                      <Report
+                        items={violations}
+                        type={RuleType.VIOLATION}
+                        empty="No accessibility violations found."
+                      />
+                    ),
+                    items: violations,
+                    type: RuleType.VIOLATION,
+                  },
+                  {
+                    label: <Passes>{passes.length} Passes</Passes>,
+                    panel: (
+                      <Report
+                        items={passes}
+                        type={RuleType.PASS}
+                        empty="No accessibility checks passed."
+                      />
+                    ),
+                    items: passes,
+                    type: RuleType.PASS,
+                  },
+                  {
+                    label: <Incomplete>{incomplete.length} Incomplete</Incomplete>,
+                    panel: (
+                      <Report
+                        items={incomplete}
+                        type={RuleType.INCOMPLETION}
+                        empty="No accessibility checks incomplete."
+                      />
+                    ),
+                    items: incomplete,
+                    type: RuleType.INCOMPLETION,
+                  },
+                ]}
+              />
+            </ScrollArea>
+          )}
+          <ActionBar
+            key="actionbar"
+            actionItems={[{ title: actionTitle, onClick: this.request }]}
           />
-        </ScrollArea>
-        <ActionBar key="actionbar" actionItems={[{ title: actionTitle, onClick: this.request }]} />
+        </Provider>
       </Fragment>
     ) : null;
   }

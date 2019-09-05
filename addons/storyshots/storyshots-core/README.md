@@ -2,9 +2,9 @@
 
 StoryShots adds automatic Jest Snapshot Testing for [Storybook](https://storybook.js.org/).
 
-[Framework Support](https://github.com/storybooks/storybook/blob/master/ADDONS_SUPPORT.md)
+[Framework Support](https://github.com/storybookjs/storybook/blob/master/ADDONS_SUPPORT.md)
 
-![StoryShots In Action](docs/storyshots-fail.png)
+![StoryShots In Action](https://raw.githubusercontent.com/storybookjs/storybook/HEAD/addons/storyshots/storyshots-core/docs/storyshots-fail.png)
 
 To use StoryShots, you must use your existing Storybook stories as the input for Jest Snapshot Testing.
 
@@ -26,7 +26,7 @@ If you still need to configure jest you can use the resources mentioned below:
 
 > Note: If you use React 16, you'll need to follow [these additional instructions](https://github.com/facebook/react/issues/9102#issuecomment-283873039).
 >
-> Note: Make sure you have added the ```json``` extention to ```moduleFileExtensions``` in ```jest.config.json```. If this is missing it leads to the [following error](https://github.com/storybooks/storybook/issues/3728): ```Cannot find module 'spdx-license-ids' from 'scan.js'```.
+> Note: Make sure you have added the ```json``` extension to ```moduleFileExtensions``` in ```jest.config.json```. If this is missing it leads to the [following error](https://github.com/storybookjs/storybook/issues/3728): ```Cannot find module 'spdx-license-ids' from 'scan.js'```.
 >
 > Note: Please make sure you are using ```jsdom``` as the testEnvironment on your jest config file.
 
@@ -38,7 +38,7 @@ Sometimes it's useful to configure Storybook with Webpack's require.context feat
 ```js
 import { configure } from '@storybook/react';
 
-const req = require.context('../stories', true, /.stories.js$/); // <- import all the stories at once
+const req = require.context('../stories', true, /\.stories\.js$/); // <- import all the stories at once
 
 function loadStories() {
   req.keys().forEach(filename => req(filename));
@@ -52,9 +52,9 @@ other tools may lack this feature. Since Storyshot is running under Jest,
 we need to polyfill this functionality to work with Jest. The easiest
 way is to integrate it to babel.
 
-You can do this with a Babel [plugin](https://github.com/smrq/babel-plugin-require-context-hook) or [macro](https://github.com/storybooks/require-context.macro). If you're using `create-react-app` (v2 or above), you will use the macro.
+You can do this with a Babel [plugin](https://github.com/smrq/babel-plugin-require-context-hook) or [macro](https://github.com/storybookjs/require-context.macro). If you're using `create-react-app` (v2 or above), use the macro.
 
-- *Plugin*
+#### Option 1: Plugin
 
 First, install it:
 
@@ -88,7 +88,7 @@ Finally, add the plugin to `.babelrc`:
 ```
 The plugin is only added to the test environment otherwise it could replace webpack's version of it.
 
-- *Macro*
+#### Option 2: Macro
 
 First, install it:
 
@@ -101,8 +101,8 @@ Now, inside of your Storybook config file, simply import the macro and run it in
 ```javascript
 import requireContext from 'require-context.macro';
 
-// const req = require.context('../stories', true, /.stories.js$/); <-- replaced
-const req = requireContext('../stories', true, /.stories.js$/);
+// const req = require.context('../stories', true, /\.stories\.js$/); <-- replaced
+const req = requireContext('../stories', true, /\.stories\.js$/);
 ```
 
 ### Configure Jest for React
@@ -194,7 +194,7 @@ That's all.
 
 Now run your Jest test command. (Usually, `npm test`.) Then you can see all of your stories are converted as Jest snapshot tests.
 
-![Screenshot](docs/storyshots.png)
+![Screenshot](https://raw.githubusercontent.com/storybookjs/storybook/HEAD/addons/storyshots/storyshots-core/docs/storyshots.png)
 
 
 ### Using `createNodeMock` to mock refs
@@ -387,6 +387,15 @@ initStoryshots({
 });
 ```
 
+Or, as a more complex example, if we have a package in our `lerna` project called `app` with the path `./packages/app/src/__tests__/storsyhots.js` and the storybook config directory `./packages/app/.storybook`:
+
+```js
+import path from 'path';
+import initStoryshots from '@storybook/addon-storyshots';
+
+initStoryshots({ configPath: path.resolve(__dirname, '../../.storybook') });
+```
+
 `configPath` can also specify path to the `config.js` itself. In this case, config directory will be
 a base directory of the `configPath`. It may be useful when the `config.js` for test should differ from the
 original one. It also may be useful for separating tests to different test configs:
@@ -426,7 +435,7 @@ initStoryshots({
 });
 ```
 
-This can be useful if you want to separate the snapshots in directories next to each component. See an example [here](https://github.com/storybooks/storybook/issues/892).
+This can be useful if you want to separate the snapshots in directories next to each component. See an example [here](https://github.com/storybookjs/storybook/issues/892).
 
 If you want to run all stories except stories of a specific kind, you can write an inverse regex which is true for all kinds except those with a specific word such as `DontTest`
 
@@ -491,7 +500,7 @@ initStoryshots({
 ```
 
 If you are using enzyme, you need to make sure jest knows how to serialize rendered components.
-For that, you can pass an enzyme-compatible snapshotSerializer (like [enzyme-to-json](https://github.com/adriantoine/enzyme-to-json), [jest-serializer-enzyme](https://github.com/rogeliog/jest-serializer-enzyme) etc.) with the `snapshotSerializer` option (see below). 
+For that, you can pass an enzyme-compatible snapshotSerializer (like [enzyme-to-json](https://github.com/adriantoine/enzyme-to-json), [jest-serializer-enzyme](https://github.com/rogeliog/jest-serializer-enzyme) etc.) with the `snapshotSerializer` option (see below).
 
 
 ### `snapshotSerializers`
@@ -570,7 +579,7 @@ components to ensure they do not error.
 
 ### `snapshotWithOptions(options)`
 
-Like the default, but allows you to specify a set of options for the test renderer. [See for example here](https://github.com/storybooks/storybook/blob/b915b5439786e0edb17d7f5ab404bba9f7919381/examples/test-cra/src/storyshots.test.js#L14-L16).
+Like the default, but allows you to specify a set of options for the test renderer. [See for example here](https://github.com/storybookjs/storybook/blob/b915b5439786e0edb17d7f5ab404bba9f7919381/examples/test-cra/src/storyshots.test.js#L14-L16).
 
 ### `renderWithOptions(options)`
 
@@ -594,7 +603,7 @@ initStoryshots({
 
 ### `shallowSnapshot`
 
-Take a snapshot of a shallow-rendered version of the component. Note that this option will be overriden if you pass a `renderer` option.
+Take a snapshot of a shallow-rendered version of the component. Note that this option will be overridden if you pass a `renderer` option.
 
 ### `Stories2SnapsConverter`
 

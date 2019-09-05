@@ -1,7 +1,9 @@
-// tslint:disable-next-line:no-implicit-dependencies
+/* eslint-disable no-shadow */
+/* eslint-disable no-bitwise */
+/* eslint-disable no-underscore-dangle */
 import { OperatingSystem } from './platform';
 
-export const enum KeyCode {
+export enum KeyCode {
   Unknown = 0,
 
   Backspace = 1,
@@ -329,7 +331,6 @@ const userSettingsGeneralMap = new KeyCodeStrMap();
   define(KeyCode.US_OPEN_SQUARE_BRACKET, '[', '[', 'OEM_4');
   define(KeyCode.US_BACKSLASH, '\\', '\\', 'OEM_5');
   define(KeyCode.US_CLOSE_SQUARE_BRACKET, ']', ']', 'OEM_6');
-  // tslint:disable-next-line:quotemark
   define(KeyCode.US_QUOTE, "'", "'", 'OEM_7');
   define(KeyCode.OEM_8, 'OEM_8');
   define(KeyCode.OEM_102, 'OEM_102');
@@ -353,16 +354,15 @@ const userSettingsGeneralMap = new KeyCodeStrMap();
   define(KeyCode.NUMPAD_DIVIDE, 'NumPad_Divide');
 })();
 
-// tslint:disable-next-line:no-namespace
-export namespace KeyCodeUtils {
-  export function toString(keyCode: KeyCode): string {
-    return uiMap.keyCodeToStr(keyCode);
-  }
+// export namespace KeyCodeUtils {
+//   export function toString(keyCode: KeyCode): string {
+//     return uiMap.keyCodeToStr(keyCode);
+//   }
 
-  export function fromString(key: string): KeyCode {
-    return uiMap.strToKeyCode(key);
-  }
-}
+//   export function fromString(key: string): KeyCode {
+//     return uiMap.strToKeyCode(key);
+//   }
+// }
 
 /**
  * Binary encoding strategy:
@@ -378,8 +378,7 @@ export namespace KeyCodeUtils {
  * ```
  */
 
-const enum BinaryKeybindingsMask {
-  // tslint:disable:no-bitwise
+enum BinaryKeybindingsMask {
   CtrlCmd = (1 << 11) >>> 0,
   Shift = (1 << 10) >>> 0,
   Alt = (1 << 9) >>> 0,
@@ -387,7 +386,7 @@ const enum BinaryKeybindingsMask {
   KeyCode = 0x000000ff,
 }
 
-export const enum KeyMod {
+export enum KeyMod {
   CtrlCmd = (1 << 11) >>> 0,
   Shift = (1 << 10) >>> 0,
   Alt = (1 << 9) >>> 0,
@@ -399,7 +398,7 @@ export function KeyChord(firstPart: number, secondPart: number): number {
   return (firstPart | chordPart) >>> 0;
 }
 
-export const enum KeybindingType {
+export enum KeybindingType {
   Simple = 1,
   Chord = 2,
 }
@@ -551,7 +550,6 @@ export class ResolveKeybindingPart {
   }
 }
 
-// tslint:disable-next-line:max-classes-per-file
 export abstract class ResolvedKeybinding {
   /**
    * This prints the binding in a format suitable for displaying in the UI.

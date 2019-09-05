@@ -26,13 +26,17 @@ export const KEY = 'storybook-channel';
 
 export class PostmsgTransport {
   private buffer: BufferedEvent[];
+
   private handler: ChannelHandler;
 
+  private connected: boolean;
+
+  // eslint-disable-next-line @typescript-eslint/no-parameter-properties
   constructor(private readonly config: Config) {
     this.buffer = [];
     this.handler = null;
     window.addEventListener('message', this.handleEvent.bind(this), false);
-    document.addEventListener('DOMContentLoaded', () => this.flush());
+
     // Check whether the config.page parameter has a valid value
     if (config.page !== 'manager' && config.page !== 'preview') {
       throw new Error(`postmsg-channel: "config.page" cannot be "${config.page}"`);
@@ -40,7 +44,14 @@ export class PostmsgTransport {
   }
 
   setHandler(handler: ChannelHandler): void {
-    this.handler = handler;
+    this.handler = (...args) => {
+      handler.apply(this, args);
+
+      if (!this.connected && this.getWindow()) {
+        this.flush();
+        this.connected = true;
+      }
+    };
   }
 
   /**
@@ -48,15 +59,26 @@ export class PostmsgTransport {
    * the event will be stored in a buffer and sent when the window exists.
    * @param event
    */
-  send(event: ChannelEvent): Promise<any> {
+  send(event: ChannelEvent, options?: any): Promise<any> {
     const iframeWindow = this.getWindow();
     if (!iframeWindow) {
       return new Promise((resolve, reject) => {
         this.buffer.push({ event, resolve, reject });
       });
     }
+    let depth = 15;
+    let allowFunction = true;
 
-    const data = stringify({ key: KEY, event }, { maxDepth: 15 });
+    if (options && typeof options.allowFunction === 'boolean') {
+      // eslint-disable-next-line prefer-destructuring
+      allowFunction = options.allowFunction;
+    }
+    if (options && Number.isInteger(options.depth)) {
+      // eslint-disable-next-line prefer-destructuring
+      depth = options.depth;
+    }
+
+    const data = stringify({ key: KEY, event }, { maxDepth: depth, allowFunction });
 
     // TODO: investigate http://blog.teamtreehouse.com/cross-domain-messaging-with-postmessage
     // might replace '*' with document.location ?
@@ -65,7 +87,7 @@ export class PostmsgTransport {
   }
 
   private flush(): void {
-    const buffer = this.buffer;
+    const { buffer } = this;
     this.buffer = [];
     buffer.forEach(item => {
       this.send(item.event)

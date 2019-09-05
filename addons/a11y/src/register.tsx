@@ -1,13 +1,17 @@
 import React, { Fragment, FunctionComponent } from 'react';
 import { styled } from '@storybook/theming';
 
-import { ADDON_ID, PANEL_ID } from './constants';
+import { addons, types } from '@storybook/addons';
+import { ADDON_ID, PANEL_ID, PARAM_KEY } from './constants';
 import { ColorBlindness } from './components/ColorBlindness';
 import { A11YPanel } from './components/A11YPanel';
-import { addons, types } from '@storybook/addons';
 
 const Hidden = styled.div(() => ({
-  display: 'none',
+  '&, & svg': {
+    position: 'absolute',
+    width: 0,
+    height: 0,
+  },
 }));
 
 const PreviewWrapper: FunctionComponent<{}> = p => (
@@ -90,6 +94,7 @@ addons.register(ADDON_ID, api => {
     title: 'Accessibility',
     type: types.PANEL,
     render: ({ active, key }) => <A11YPanel key={key} api={api} active={active} />,
+    paramKey: PARAM_KEY,
   });
 
   addons.add(PANEL_ID, {

@@ -1,22 +1,30 @@
 import qs from 'qs';
 import memoize from 'memoizerific';
+import startCase from 'lodash/startCase';
 
 interface StoryData {
   viewMode?: string;
   storyId?: string;
 }
 
-const knownViewModesRegex = /(story|info)/;
-const splitPath = /\/([^/]+)\/([^/]+)?/;
+interface SeparatorOptions {
+  rootSeparator: string | RegExp;
+  groupSeparator: string | RegExp;
+}
+
+const splitPathRegex = /\/([^/]+)\/([^/]+)?/;
 
 // Remove punctuation https://gist.github.com/davidjrice/9d2af51100e41c6c4b4a
 export const sanitize = (string: string) => {
-  return string
-    .toLowerCase()
-    .replace(/[ ’–—―′¿'`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
+  return (
+    string
+      .toLowerCase()
+      // eslint-disable-next-line no-useless-escape
+      .replace(/[ ’–—―′¿'`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '')
+  );
 };
 
 const sanitizeSafe = (string: string, part: string) => {
@@ -30,7 +38,7 @@ const sanitizeSafe = (string: string, part: string) => {
 export const toId = (kind: string, name: string) =>
   `${sanitizeSafe(kind, 'kind')}--${sanitizeSafe(name, 'name')}`;
 
-export const storyDataFromString: (path: string) => StoryData = memoize(1000)(
+export const parsePath: (path?: string) => StoryData = memoize(1000)(
   (path: string | undefined | null) => {
     const result: StoryData = {
       viewMode: undefined,
@@ -38,8 +46,8 @@ export const storyDataFromString: (path: string) => StoryData = memoize(1000)(
     };
 
     if (path) {
-      const [, viewMode, storyId] = path.match(splitPath) || [undefined, undefined, undefined];
-      if (viewMode && viewMode.match(knownViewModesRegex)) {
+      const [, viewMode, storyId] = path.match(splitPathRegex) || [undefined, undefined, undefined];
+      if (viewMode) {
         Object.assign(result, {
           viewMode,
           storyId,
@@ -50,9 +58,15 @@ export const storyDataFromString: (path: string) => StoryData = memoize(1000)(
   }
 );
 
-export const queryFromString = memoize(1000)(s => qs.parse(s, { ignoreQueryPrefix: true }));
+interface Query {
+  [key: string]: any;
+}
+
+export const queryFromString = memoize(1000)(
+  (s: string): Query => qs.parse(s, { ignoreQueryPrefix: true })
+);
 export const queryFromLocation = (location: { search: string }) => queryFromString(location.search);
-export const stringifyQuery = (query: object) =>
+export const stringifyQuery = (query: Query) =>
   qs.stringify(query, { addQueryPrefix: true, encode: false });
 
 export const getMatch = memoize(1000)(
@@ -67,3 +81,17 @@ export const getMatch = memoize(1000)(
     return null;
   }
 );
+
+export const parseKind = (kind: string, { rootSeparator, groupSeparator }: SeparatorOptions) => {
+  const [root, remainder] = kind.split(rootSeparator, 2);
+  const groups = (remainder || kind).split(groupSeparator).filter(i => !!i);
+
+  // when there's no remainder, it means the root wasn't found/split
+  return {
+    root: remainder ? root : null,
+    groups,
+  };
+};
+
+// Transform the CSF named export into a readable story name
+export const storyNameFromExport = (key: string) => startCase(key);

@@ -16,13 +16,16 @@ module.exports = {
       guides: [
         '/guides/quick-start-guide/',
         '/guides/slow-start-guide/',
+        '/guides/guide-html/',
         '/guides/guide-react/',
         '/guides/guide-react-native/',
         '/guides/guide-vue/',
         '/guides/guide-angular/',
         '/guides/guide-mithril/',
+        '/guides/guide-marko/',
         '/guides/guide-ember/',
         '/guides/guide-riot/',
+        '/guides/guide-svelte/',
       ],
       configurations: [
         '/configurations/options-parameter/',
@@ -31,11 +34,17 @@ module.exports = {
         '/configurations/custom-babel-config/',
         '/configurations/typescript-config/',
         '/configurations/add-custom-head-tags/',
+        '/configurations/add-custom-body/',
         '/configurations/serving-static-files/',
         '/configurations/env-vars/',
         '/configurations/theming/',
         '/configurations/cli-options/',
         '/configurations/standalone-options/',
+      ],
+      formats: [
+        '/formats/component-story-format/',
+        '/formats/storiesof-api/',
+        '/formats/mdx-syntax/',
       ],
       testing: [
         '/testing/react-ui-testing/',
@@ -50,6 +59,7 @@ module.exports = {
         '/addons/writing-addons/',
         '/addons/api/',
       ],
+      presets: ['/presets/introduction/', '/presets/preset-gallery/', '/presets/writing-presets/'],
     },
   },
   plugins: [
@@ -58,6 +68,12 @@ module.exports = {
       options: {
         name: 'pages',
         path: `${__dirname}/src/pages/`,
+      },
+    },
+    {
+      resolve: `gatsby-plugin-styled-components`,
+      options: {
+        repoUrl: 'https://github.com/storybookjs/storybook',
       },
     },
     {
@@ -77,5 +93,11 @@ module.exports = {
       },
     },
     'gatsby-plugin-sharp',
+    {
+      resolve: 'gatsby-plugin-segment',
+      options: {
+        writeKey: 'AvvBObOmHaEMqfub8JJUXq5umjsuaqS8',
+      },
+    },
   ],
 };

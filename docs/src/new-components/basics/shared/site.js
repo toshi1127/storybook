@@ -10,7 +10,7 @@ export const metadata = {
   description: `Storybook is an open source tool for developing UI components in isolation for React, Vue, and Angular`,
   ogImage: '/images/social/open-graph.png',
   googleSiteVerification: '',
-  latestVersion: 'v5.0',
+  latestVersion: 'v5.1',
 };
 
 export const url = {
@@ -35,6 +35,7 @@ export const url = {
     html: `${npmApiBase}/@storybook/html`,
     svelte: `${npmApiBase}/@storybook/svelte`,
     mithril: `${npmApiBase}/@storybook/mithril`,
+    marko: `${npmApiBase}/@storybook/marko`,
     riot: `${npmApiBase}/@storybook/riot`,
     polymer: `${npmApiBase}/@storybook/polymer`,
     preact: `${npmApiBase}/@storybook/preact`,
@@ -46,11 +47,12 @@ export const url = {
     home: `${docsUrl}/basics/introduction/`,
     addonInstruction: `${docsUrl}/addons/writing-addons/`,
   },
-  addons: `${homepageUrl}/addons`,
-  community: `${homepageUrl}/community`,
-  useCases: `${homepageUrl}/use-cases`,
-  support: `${homepageUrl}/support`,
-  team: `${homepageUrl}/team`,
+  tutorials: `https://www.learnstorybook.com/`,
+  addons: `${homepageUrl}/addons/`,
+  community: `${homepageUrl}/community/`,
+  useCases: `${homepageUrl}/use-cases/`,
+  support: `${homepageUrl}/support/`,
+  team: `${homepageUrl}/team/`,
 
   // Social
   blog: `https://medium.com/storybookjs`,
@@ -75,6 +77,7 @@ export const url = {
     html: `${docsUrl}/guides/guide-html/`,
     svelte: `${docsUrl}/guides/guide-svelte/`,
     mithril: `${docsUrl}/guides/guide-mithril/`,
+    marko: `${docsUrl}/guides/guide-marko/`,
     riot: `${docsUrl}/guides/guide-riot/`,
   },
 

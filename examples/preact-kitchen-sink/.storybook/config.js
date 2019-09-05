@@ -1,18 +1,13 @@
 /** @jsx h */
-import { configure } from '@storybook/preact';
-import { setOptions } from '@storybook/addon-options';
+import { configure, addParameters, addDecorator } from '@storybook/preact';
+import { withA11y } from '@storybook/addon-a11y';
 
-setOptions({
-  hierarchySeparator: /\/|\./,
-  hierarchyRootSeparator: /\|/,
+addDecorator(withA11y);
+addParameters({
+  options: {
+    hierarchySeparator: /\/|\./,
+    hierarchyRootSeparator: /\|/,
+  },
 });
 
-const loadStories = () => {
-  require('../src/stories/index.stories');
-
-  const requireContext = require.context('../src', true, /\.stories\.js$/);
-
-  requireContext.keys().forEach(filename => requireContext(filename));
-};
-
-configure(loadStories, module);
+configure(require.context('../src', true, /\.stories\.js$/), module);
