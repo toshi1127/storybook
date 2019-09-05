@@ -143,7 +143,7 @@ const initial: SubState = {
     panelPosition: 'bottom',
   },
   selectedPanel: undefined,
-  theme: themes.light,
+  theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? themes.dark : themes.light,
 };
 
 export const focusableUIElements = {

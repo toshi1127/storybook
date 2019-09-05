@@ -7,7 +7,7 @@ import { ThemeVars } from './types';
 export const themes: { light: ThemeVars; dark: ThemeVars; normal: ThemeVars } = {
   light: lightThemeVars,
   dark: darkThemeVars,
-  normal: lightThemeVars,
+  normal: window.matchMedia('(prefers-color-scheme: dark)').matches ? darkThemeVars : lightThemeVars,
 };
 
 interface Rest {
