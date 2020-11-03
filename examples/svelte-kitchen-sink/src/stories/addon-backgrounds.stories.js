@@ -1,14 +1,20 @@
-import { storiesOf } from '@storybook/svelte';
-
 import ButtonView from './views/ButtonView.svelte';
 
-storiesOf('Addon|Backgrounds', module)
-  .addParameters({
-    backgrounds: [
-      { name: 'light', value: '#eeeeee' },
-      { name: 'dark', value: '#222222', default: true },
-    ],
-  })
-  .add('story 1', () => ({
-    Component: ButtonView,
-  }));
+export default {
+  title: 'Addon/Backgrounds',
+  parameters: {
+    backgrounds: {
+      default: 'dark',
+      values: [
+        { name: 'light', value: '#eeeeee' },
+        { name: 'dark', value: '#222222' },
+      ],
+    },
+  },
+};
+
+export const Story1 = () => ({
+  Component: ButtonView,
+});
+
+Story1.storyName = 'story 1';

@@ -3,8 +3,9 @@
   "include": [
     "src/**/*.ts"
   ],
-  "compileOnSave": false,
   "compilerOptions": {
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "experimentalDecorators": true,
+    "declaration": true
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-constructor */
 import { Component, Input, InjectionToken, Injector, ElementRef, Inject } from '@angular/core';
 
 export const TEST_TOKEN = new InjectionToken<string>('test');

@@ -9,9 +9,9 @@ const Wrapper = styled.div({
   margin: '12px 0',
 });
 
-const Item = styled.div(({ theme }) => ({
+const Item = styled.div<{}>(({ theme }) => ({
   margin: '0 6px',
-  padding: '5px',
+  padding: 5,
   border: `1px solid ${theme.appBorderColor}`,
   borderRadius: theme.appBorderRadius,
 }));
@@ -23,7 +23,7 @@ interface TagsProps {
 export const Tags: FunctionComponent<TagsProps> = ({ tags }) => {
   return (
     <Wrapper>
-      {tags.map(tag => (
+      {tags.map((tag) => (
         <Item key={tag}>{tag}</Item>
       ))}
     </Wrapper>

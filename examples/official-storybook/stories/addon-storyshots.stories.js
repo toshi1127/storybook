@@ -1,5 +1,4 @@
-import React from 'react';
-import { storiesOf } from '@storybook/react';
+import React, { useState } from 'react';
 import { styled } from '@storybook/theming';
 
 const Block = styled.div({
@@ -9,4 +8,28 @@ const Block = styled.div({
   background: 'hotpink',
 });
 
-storiesOf('Addons|Storyshots', module).add('block', () => <Block />);
+export default {
+  title: 'Addons/Storyshots',
+};
+
+export const block = () => {
+  const [hover, setHover] = useState(false);
+
+  return (
+    <Block data-test-block onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      {hover && 'I am hovered'}
+    </Block>
+  );
+};
+block.storyName = 'Block story';
+
+block.parameters = {
+  async puppeteerTest(page) {
+    const element = await page.$('[data-test-block]');
+    await element.hover();
+    const textContent = await element.getProperty('textContent');
+    const text = await textContent.jsonValue();
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(text).toBe('I am hovered');
+  },
+};

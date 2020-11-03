@@ -21,7 +21,9 @@ export class CustomCvaComponent implements ControlValueAccessor {
   disabled: boolean;
 
   protected onChange: (value: any) => void = NOOP;
+
   protected onTouch: () => void = NOOP;
+
   protected internalValue: any;
 
   get value(): any {

@@ -1,45 +1,77 @@
 {
   "name": "@storybook/addon-actions",
-  "version": "5.1.0-alpha.4",
+  "version": "6.1.0-beta.1",
   "description": "Action Logger addon for storybook",
   "keywords": [
     "storybook"
   ],
-  "homepage": "https://github.com/storybooks/storybook/tree/master/addons/actions",
+  "homepage": "https://github.com/storybookjs/storybook/tree/master/addons/actions",
   "bugs": {
-    "url": "https://github.com/storybooks/storybook/issues"
+    "url": "https://github.com/storybookjs/storybook/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/storybooks/storybook.git",
+    "url": "https://github.com/storybookjs/storybook.git",
     "directory": "addons/actions"
   },
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "ts3.4/**/*"
+  ],
   "scripts": {
     "prepare": "node ../../scripts/prepare.js"
   },
   "dependencies": {
-    "@storybook/addons": "5.1.0-alpha.4",
-    "@storybook/components": "5.1.0-alpha.4",
-    "@storybook/core-events": "5.1.0-alpha.4",
-    "@storybook/theming": "5.1.0-alpha.4",
-    "core-js": "^2.6.5",
-    "fast-deep-equal": "^2.0.1",
+    "@storybook/addons": "6.1.0-beta.1",
+    "@storybook/api": "6.1.0-beta.1",
+    "@storybook/client-api": "6.1.0-beta.1",
+    "@storybook/components": "6.1.0-beta.1",
+    "@storybook/core-events": "6.1.0-beta.1",
+    "@storybook/theming": "6.1.0-beta.1",
+    "core-js": "^3.0.1",
+    "fast-deep-equal": "^3.1.1",
     "global": "^4.3.2",
-    "lodash": "^4.17.11",
-    "polished": "^3.0.0",
+    "lodash": "^4.17.15",
+    "polished": "^3.4.4",
     "prop-types": "^15.7.2",
-    "react": "^16.8.4",
-    "react-inspector": "^2.3.1",
-    "uuid": "^3.3.2"
+    "react-inspector": "^5.0.1",
+    "regenerator-runtime": "^0.13.7",
+    "ts-dedent": "^2.0.0",
+    "util-deprecate": "^1.0.2",
+    "uuid": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.150",
+    "@types/uuid": "^7.0.3",
+    "@types/webpack-env": "^1.15.2"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public"
   },
-  "devDependencies": {
-    "@types/lodash": "^4.14.121",
-    "@types/uuid": "^3.4.4"
+  "gitHead": "763c233efc86849979db1c4c795035bd58f1ced9",
+  "typesVersions": {
+    "<3.8": {
+      "*": [
+        "ts3.4/*"
+      ]
+    }
   }
 }

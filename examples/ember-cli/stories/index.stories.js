@@ -1,10 +1,14 @@
-import hbs from 'htmlbars-inline-precompile';
-import { storiesOf } from '@storybook/ember';
+import { hbs } from 'ember-cli-htmlbars';
 
-storiesOf('Welcome', module)
-  .addParameters({ options: { showAddonPanel: false } })
-  .add('basic', () => ({
-    template: hbs`
+export default {
+  title: 'Welcome',
+  parameters: {
+    options: { showPanel: false },
+  },
+};
+
+export const Basic = () => ({
+  template: hbs`
         {{welcome-page}}
       `,
-  }));
+});

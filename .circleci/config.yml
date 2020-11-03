@@ -1,127 +1,327 @@
-version: 2
+version: 2.1
 
-aliases:
-  - &defaults
+executors:
+  sb_node:
+    parameters:
+      class:
+        description: The Resource class
+        type: enum
+        enum: ['small', 'medium', 'large', 'xlarge']
+        default: 'medium'
     working_directory: /tmp/storybook
     docker:
-      - image: circleci/node:8
+      - image: circleci/node:10-browsers
+        environment:
+          NODE_OPTIONS: --max_old_space_size=4096
+    resource_class: <<parameters.class>>
+  sb_node_12:
+    parameters:
+      class:
+        description: The Resource class
+        type: enum
+        enum: ['small', 'medium', 'large', 'xlarge']
+        default: 'medium'
+    working_directory: /tmp/storybook
+    docker:
+      - image: circleci/node:12-browsers
+        environment:
+          NODE_OPTIONS: --max_old_space_size=4096
+    resource_class: <<parameters.class>>
 
-dependencies:
-  pre:
-    - yarn global add npm
 jobs:
   build:
-    <<: *defaults
+    executor:
+      class: large
+      name: sb_node
     steps:
       - checkout
+      - run:
+          name: Remove examples
+          command: rm -rf examples/
       - restore_cache:
-          name: Restore core dependencies cache
+          name: Restore Yarn cache
           keys:
-            - core-dependencies-v3-{{ checksum "yarn.lock" }}
+            - build-yarn-cache-v1--{{ checksum "yarn.lock" }}
+            - build-yarn-cache-v1--
       - run:
           name: Install dependencies
-          command: yarn install
-      - run:
-          name: Check that yarn.lock is not corrupted
-          command: yarn repo-dirty-check
+          command: yarn install --frozen-lockfile --cache-folder ~/.cache/yarn
       - run:
           name: Bootstrap
           command: yarn bootstrap --core
       - save_cache:
-          name: Cache core dependencies
-          key: core-dependencies-v3-{{ checksum "yarn.lock" }}
+          name: Save Yarn cache
+          key: build-yarn-cache-v1--{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
       - persist_to_workspace:
           root: .
           paths:
-            - node_modules
-            - examples
             - addons
+            - dev-kits
             - app
             - lib
-  examples:
-    <<: *defaults
+  install-examples-deps:
+    executor:
+      class: large
+      name: sb_node
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore Yarn cache
+          keys:
+            - install-examples-deps-yarn-cache-v1--{{ checksum "yarn.lock" }}
+            - install-examples-deps-yarn-cache-v1--
+      - run:
+          name: Install dependencies
+          command: yarn install --frozen-lockfile --cache-folder ~/.cache/yarn
+      - save_cache:
+          name: Save Yarn cache
+          key: install-examples-deps-yarn-cache-v1--{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+      - persist_to_workspace:
+          root: .
+          paths:
+            - examples
+            - node_modules
+  install-e2e-deps:
+    executor:
+      class: large
+      name: sb_node
+    steps:
+      - checkout
+      - run:
+          name: Keep only root package
+          command: rm -rf examples/ && rm -rf addons/ && rm -rf app/ && rm -rf lib/
+      - restore_cache:
+          name: Restore Yarn cache
+          keys:
+            - install-e2e-deps-yarn-cache-v1--{{ checksum "yarn.lock" }}
+            - install-e2e-deps-yarn-cache-v1--
+      - run:
+          name: Install dependencies
+          command: yarn install --frozen-lockfile --cache-folder ~/.cache/yarn
+      - save_cache:
+          name: Save Yarn cache
+          key: install-e2e-deps-yarn-cache-v1--{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+      - persist_to_workspace:
+          root: .
+          paths:
+            - examples
+            - node_modules
+  chromatic:
+    executor: sb_node
+    parallelism: 11
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
-          name: Workaround for https://github.com/GoogleChrome/puppeteer/issues/290
-          command: sh ./scripts/workaround-puppeteer-issue-290.sh
-      - run:
-          name: Build react kitchen-sink
+          name: examples
           command: |
-            cd examples/cra-kitchen-sink
-            yarn build-storybook
+            yarn run-chromatics
+  packtracker:
+    executor:
+      class: medium
+      name: sb_node
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
       - run:
-          name: Build react typescript kitchen-sink
-          command: |
-            cd examples/cra-ts-kitchen-sink
-            yarn build-storybook
-      - run:
-          name: Build vue kitchen-sink
-          command: |
-            cd examples/vue-kitchen-sink
-            yarn build-storybook
-      - run:
-          name: Build svelte kitchen-sink
-          command: |
-            cd examples/svelte-kitchen-sink
-            yarn build-storybook
-      - run:
-          name: Build angular-cli
-          command: |
-            cd examples/angular-cli
-            yarn build-storybook
-      - run:
-          name: Build ember-cli
-          command: |
-            cd examples/ember-cli
-            yarn build-storybook
-      - run:
-          name: Build polymer-cli
-          command: |
-            cd examples/polymer-cli
-            yarn build-storybook
-      - run:
-          name: Build marko-cli
-          command: |
-            cd examples/marko-cli
-            yarn build-storybook
-      - run:
-          name: Build mithril kitchen-sink
-          command: |
-            cd examples/mithril-kitchen-sink
-            yarn build-storybook
-      - run:
-          name: Build html kitchen-sink
-          command: |
-            cd examples/html-kitchen-sink
-            yarn build-storybook
-      - run:
-          name: Build riot kitchen-sink
-          command: |
-            cd examples/riot-kitchen-sink
-            yarn build-storybook
-      - run:
-          name: Build preact kitchen-sink
-          command: |
-            cd examples/preact-kitchen-sink
-            yarn build-storybook
-      - run:
-          name: Build official-storybook
+          name: Report webpack stats for manager of official storybook
           command: |
             cd examples/official-storybook
-            yarn build-storybook
-      # - run:
-      #     name: Run image snapshots
-      #     command: yarn test --image
+            yarn packtracker
+  examples:
+    executor:
+      class: large
+      name: sb_node
+    parallelism: 11
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: examples
+          command: |
+            yarn build-storybooks
+      - persist_to_workspace:
+          root: .
+          paths:
+            - built-storybooks
+  publish:
+    executor:
+      class: large
+      name: sb_node
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: running local registry
+          command: yarn local-registry --publish
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .verdaccio-cache
+  examples-v2:
+    executor:
+      class: large
+      name: sb_node
+    working_directory: /tmp/storybook
+    parallelism: 10
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: running local registry
+          command: yarn local-registry --port 6000 --open
+          background: true
+      - run:
+          name: wait for registry
+          command: yarn wait-on http://localhost:6000
+      - run:
+          name: set registry
+          command: yarn config set registry http://localhost:6000/
+      - run:
+          name: test local registry
+          command: yarn info @storybook/core
+      - run:
+          name: Install Cypress binary
+          command: yarn cypress install
+      - run:
+          name: run e2e tests
+          command: yarn test:e2e-framework
       - store_artifacts:
-          path: examples/official-storybook/image-snapshots/__image_snapshots__
-          destination: official_storybook_image_snapshots
+          path: /tmp/storybook/cypress
+          destination: cypress
+  examples-v2-cra-bench:
+    executor:
+      class: medium
+      name: sb_node_12
+    working_directory: /tmp/storybook
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Running local registry
+          command: yarn local-registry --port 6000 --open
+          background: true
+      - run:
+          name: Wait for registry
+          command: yarn wait-on http://localhost:6000
+      - run:
+          name: Set registry
+          command: yarn config set registry http://localhost:6000/
+      - run:
+          name: Test local registry
+          command: yarn info @storybook/core
+      - run:
+          name: Install Cypress binary
+          command: yarn cypress install
+      - run:
+          name: Run @storybook/bench on a CRA project
+          command: yarn test:e2e-framework cra_bench
+      - store_artifacts:
+          path: /tmp/storybook/cypress
+          destination: cypress
+  examples-v2-angular:
+    executor:
+      class: medium
+      name: sb_node_12
+    working_directory: /tmp/storybook
+    parallelism: 2
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Running local registry
+          command: yarn local-registry --port 6000 --open
+          background: true
+      - run:
+          name: Wait for registry
+          command: yarn wait-on http://localhost:6000
+      - run:
+          name: Set registry
+          command: yarn config set registry http://localhost:6000/
+      - run:
+          name: Test local registry
+          command: yarn info @storybook/core
+      - run:
+          name: Install Cypress binary
+          command: yarn cypress install
+      - run:
+          name: Run e2e tests
+          command: yarn test:e2e-framework angular@latest angular@v9-lts
+      - store_artifacts:
+          path: /tmp/storybook/cypress
+          destination: cypress
+  examples-v2-yarn-2:
+    executor:
+      class: medium
+      name: sb_node
+    working_directory: /tmp/storybook
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: running local registry
+          command: yarn local-registry --port 6000 --open
+          background: true
+      - run:
+          name: wait for registry
+          command: yarn wait-on http://localhost:6000
+      - run:
+          name: set registry
+          command: yarn config set registry http://localhost:6000/
+      - run:
+          name: test local registry
+          command: yarn info @storybook/core
+      - run:
+          name: Install Cypress binary
+          command: yarn cypress install
+      - run:
+          name: run e2e tests
+          command: yarn test:e2e-framework --use-yarn-2 sfcVue cra
+      - store_artifacts:
+          path: /tmp/storybook/cypress
+          destination: cypress
+  e2e:
+    working_directory: /tmp/storybook
+    docker:
+      - image: cypress/included:4.7.0
+        environment:
+          TERM: xterm
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: running example
+          command: yarn serve-storybooks
+          background: true
+      - run:
+          name: await running examples
+          command: yarn await-serve-storybooks
+      - run:
+          name: cypress run
+          command: yarn test:e2e
+      - store_artifacts:
+          path: /tmp/storybook/cypress
+          destination: cypress
+
   smoke-tests:
-    <<: *defaults
+    executor:
+      class: medium
+      name: sb_node
     steps:
       - checkout
       - attach_workspace:
@@ -157,11 +357,6 @@ jobs:
             cd examples/ember-cli
             yarn storybook --smoke-test --quiet
       - run:
-          name: Run polymer-cli (smoke test)
-          command: |
-            cd examples/polymer-cli
-            yarn storybook --smoke-test --quiet
-      - run:
           name: Run marko-cli (smoke test)
           command: |
             cd examples/marko-cli
@@ -186,69 +381,29 @@ jobs:
           command: |
             cd examples/preact-kitchen-sink
             yarn storybook --smoke-test --quiet
-  native-smoke-tests:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
       - run:
-          name: Bootstrap
-          command: yarn bootstrap --reactnativeapp
-      - run:
-          name: Run React-Native-App example
+          name: Run cra reac15 (smoke test)
           command: |
-            cd examples-native/crna-kitchen-sink
-            yarn storybook --smoke-test
+            cd examples/cra-react15
+            yarn storybook --smoke-test --quiet
   frontpage:
-    <<: *defaults
+    executor: sb_node
     steps:
       - checkout
       - restore_cache:
           name: Restore core dependencies cache
           keys:
-            - core-dependencies-v3-{{ checksum "yarn.lock" }}
+            - core-dependencies-v5-{{ checksum "yarn.lock" }}
       - run:
           name: Install dependencies
-          command: yarn install
+          command: yarn bootstrap --install
       - run:
           name: Trigger build
           command: ./scripts/build-frontpage.js
-      - save_cache:
-          name: Cache core dependencies
-          key: core-dependencies-v3-{{ checksum "yarn.lock" }}
-          paths:
-            - ~/.cache/yarn
-  docs:
-    <<: *defaults
-    steps:
-      - checkout
-      - restore_cache:
-          name: Restore docs dependencies cache
-          keys:
-            - docs-dependencies-v2-{{ checksum "docs/yarn.lock" }}
-      - run:
-          name: Install dependencies
-          command: |
-            cd docs
-            yarn install
-      - run:
-          name: Build docs
-          command: |
-            cd docs
-            yarn build
-      - save_cache:
-          name: Cache docs dependencies
-          key: docs-dependencies-v2-{{ checksum "docs/yarn.lock" }}
-          paths:
-            - ~/.cache/yarn
-      - persist_to_workspace:
-          root: .
-          paths:
-            - docs/public
-            - docs/node_modules
   lint:
-    <<: *defaults
+    executor:
+      class: small
+      name: sb_node
     steps:
       - checkout
       - attach_workspace:
@@ -257,20 +412,22 @@ jobs:
           name: Lint
           command: yarn lint
   test:
-    <<: *defaults
+    executor: sb_node
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
           name: Test
-          command: yarn test --coverage --runInBand --core
+          command: yarn test --coverage --w2 --core
       - persist_to_workspace:
           root: .
           paths:
             - coverage
   coverage:
-    <<: *defaults
+    executor:
+      class: small
+      name: sb_node
     steps:
       - checkout
       - attach_workspace:
@@ -278,58 +435,58 @@ jobs:
       - run:
           name: Upload coverage
           command: yarn coverage
-  cli-test:
-    <<: *defaults
-    environment:
-      BASH_ENV: ~/.bashrc
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          name: Test
-          command: yarn test --cli
-          no_output_timeout: 1800
-  cli-test-latest-cra:
-    <<: *defaults
-    environment:
-      BASH_ENV: ~/.bashrc
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          name: Test CLI with latest CR(N)A
-          command: yarn test-latest-cra
+
 workflows:
-  version: 2
-  build_test_deploy:
+  test:
     jobs:
       - build
-      - docs
-      - frontpage
+      - install-e2e-deps
+      - install-examples-deps
       - lint:
           requires:
-            - docs
+            - install-examples-deps
             - build
       - examples:
           requires:
+            - install-examples-deps
             - build
+      - e2e:
+          requires:
+            - examples
       - smoke-tests:
           requires:
+            - install-examples-deps
             - build
-      - native-smoke-tests:
+      - packtracker:
           requires:
+            - install-examples-deps
             - build
       - test:
           requires:
+            - install-examples-deps
             - build
       - coverage:
           requires:
             - test
-      - cli-test:
+      - chromatic:
           requires:
-            - build
-      - cli-test-latest-cra:
+            - examples
+      - publish:
           requires:
+            - install-e2e-deps
             - build
+      - examples-v2:
+          requires:
+            - publish
+      - examples-v2-angular:
+          requires:
+            - publish
+      - examples-v2-yarn-2:
+          requires:
+            - publish
+      - examples-v2-cra-bench:
+          requires:
+            - publish
+  deploy:
+    jobs:
+      - frontpage

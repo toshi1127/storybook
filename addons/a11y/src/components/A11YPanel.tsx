@@ -1,172 +1,185 @@
-import React, { Component, Fragment } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { styled } from '@storybook/theming';
 
-import { STORY_RENDERED } from '@storybook/core-events';
 import { ActionBar, Icons, ScrollArea } from '@storybook/components';
 
-import { AxeResults, Result } from 'axe-core';
+import { AxeResults } from 'axe-core';
+import { useChannel, useParameter, useStorybookState } from '@storybook/api';
 import { Report } from './Report';
 import { Tabs } from './Tabs';
+
+import { useA11yContext } from './A11yContext';
 import { EVENTS } from '../constants';
+import { A11yParameters } from '../params';
 
-const Icon = styled(Icons)(
-  {
-    height: '12px',
-    width: '12px',
-    marginRight: '4px',
-  },
-  ({ status, theme }: any) =>
-    status === 'running'
-      ? {
-          animation: `${theme.animation.rotate360} 1s linear infinite;`,
-        }
-      : {}
-);
+export enum RuleType {
+  VIOLATION,
+  PASS,
+  INCOMPLETION,
+}
 
-const Passes = styled.span(({ theme }) => ({
+const Icon = styled(Icons)({
+  height: 12,
+  width: 12,
+  marginRight: 4,
+});
+
+const RotatingIcon = styled(Icon)<{}>(({ theme }) => ({
+  animation: `${theme.animation.rotate360} 1s linear infinite;`,
+}));
+
+const Passes = styled.span<{}>(({ theme }) => ({
   color: theme.color.positive,
 }));
 
-const Violations = styled.span(({ theme }) => ({
+const Violations = styled.span<{}>(({ theme }) => ({
   color: theme.color.negative,
 }));
 
-const Incomplete = styled.span(({ theme }) => ({
+const Incomplete = styled.span<{}>(({ theme }) => ({
   color: theme.color.warning,
 }));
 
-interface A11YPanelState {
-  status: string;
-  passes: Result[];
-  violations: Result[];
-  incomplete: Result[];
-}
+const Centered = styled.span<{}>({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+});
 
-interface A11YPanelProps {
-  active: boolean;
-  api: {
-    on(event: string, callback: (data: any) => void): void;
-    off(event: string, callback: (data: any) => void): void;
-    emit(event: string): void;
-  };
-}
+type Status = 'initial' | 'manual' | 'running' | 'error' | 'ran' | 'ready';
 
-export class A11YPanel extends Component<A11YPanelProps, A11YPanelState> {
-  state: A11YPanelState = {
-    status: 'ready',
-    passes: [],
-    violations: [],
-    incomplete: [],
-  };
+export const A11YPanel: React.FC = () => {
+  const { manual } = useParameter<Pick<A11yParameters, 'manual'>>('a11y', {
+    manual: false,
+  });
+  const [status, setStatus] = useState<Status>(manual ? 'manual' : 'initial');
+  const [error, setError] = React.useState<unknown>(undefined);
+  const { setResults, results } = useA11yContext();
+  const { storyId } = useStorybookState();
 
-  componentDidMount() {
-    const { api } = this.props;
+  React.useEffect(() => {
+    setStatus(manual ? 'manual' : 'initial');
+  }, [manual]);
 
-    api.on(STORY_RENDERED, this.request);
-    api.on(EVENTS.RESULT, this.onUpdate);
-  }
+  const handleResult = (axeResults: AxeResults) => {
+    setStatus('ran');
+    setResults(axeResults);
 
-  componentDidUpdate(prevProps: A11YPanelProps) {
-    // TODO: might be able to remove this
-    const { active } = this.props;
-
-    if (!prevProps.active && active) {
-      this.request();
-    }
-  }
-
-  componentWillUnmount() {
-    const { api } = this.props;
-
-    api.off(STORY_RENDERED, this.request);
-    api.off(EVENTS.RESULT, this.onUpdate);
-  }
-
-  onUpdate = ({ passes, violations, incomplete }: AxeResults) => {
-    this.setState(
-      {
-        status: 'ran',
-        passes,
-        violations,
-        incomplete,
-      },
-      () => {
-        setTimeout(() => {
-          const { status } = this.state;
-          if (status === 'ran') {
-            this.setState({
-              status: 'ready',
-            });
-          }
-        }, 900);
+    setTimeout(() => {
+      if (status === 'ran') {
+        setStatus('ready');
       }
-    );
+    }, 900);
   };
 
-  request = () => {
-    const { api, active } = this.props;
+  const handleRun = useCallback(() => {
+    setStatus('running');
+  }, []);
 
-    if (active) {
-      this.setState(
-        {
-          status: 'running',
-        },
-        () => {
-          api.emit(EVENTS.REQUEST);
-        }
-      );
-    }
-  };
+  const handleError = useCallback((err: unknown) => {
+    setStatus('error');
+    setError(err);
+  }, []);
 
-  render() {
-    const { passes, violations, incomplete, status } = this.state;
-    const { active } = this.props;
+  const emit = useChannel({
+    [EVENTS.RUNNING]: handleRun,
+    [EVENTS.RESULT]: handleResult,
+    [EVENTS.ERROR]: handleError,
+  });
 
-    let actionTitle;
-    if (status === 'ready') {
-      actionTitle = 'Rerun tests';
-    } else if (status === 'running') {
-      actionTitle = (
-        <Fragment>
-          <Icon inline icon="sync" status={status} /> Running test
-        </Fragment>
-      );
-    } else if (status === 'ran') {
-      actionTitle = (
-        <Fragment>
-          <Icon inline icon="check" /> Tests completed
-        </Fragment>
-      );
-    }
+  const handleManual = useCallback(() => {
+    setStatus('running');
+    emit(EVENTS.MANUAL, storyId);
+  }, [storyId]);
 
-    return active ? (
-      <Fragment>
-        <ScrollArea vertical horizontal>
-          <Tabs
-            key="tabs"
-            tabs={[
-              {
-                label: <Violations>{violations.length} Violations</Violations>,
-                panel: (
-                  <Report passes={false} items={violations} empty="No a11y violations found." />
-                ),
-              },
-              {
-                label: <Passes>{passes.length} Passes</Passes>,
-                panel: <Report passes items={passes} empty="No a11y check passed." />,
-              },
-              {
-                label: <Incomplete>{incomplete.length} Incomplete</Incomplete>,
-                panel: (
-                  <Report passes={false} items={incomplete} empty="No a11y incomplete found." />
-                ),
-              },
-            ]}
+  const manualActionItems = useMemo(() => [{ title: 'Run test', onClick: handleManual }], [
+    handleManual,
+  ]);
+  const readyActionItems = useMemo(
+    () => [
+      {
+        title:
+          status === 'ready' ? (
+            'Rerun tests'
+          ) : (
+            <>
+              <Icon inline icon="check" /> Tests completed
+            </>
+          ),
+        onClick: handleManual,
+      },
+    ],
+    [status, handleManual]
+  );
+  const tabs = useMemo(() => {
+    const { passes, incomplete, violations } = results;
+    return [
+      {
+        label: <Violations>{violations.length} Violations</Violations>,
+        panel: (
+          <Report
+            items={violations}
+            type={RuleType.VIOLATION}
+            empty="No accessibility violations found."
           />
-        </ScrollArea>
-        <ActionBar key="actionbar" actionItems={[{ title: actionTitle, onClick: this.request }]} />
-      </Fragment>
-    ) : null;
-  }
-}
+        ),
+        items: violations,
+        type: RuleType.VIOLATION,
+      },
+      {
+        label: <Passes>{passes.length} Passes</Passes>,
+        panel: (
+          <Report items={passes} type={RuleType.PASS} empty="No accessibility checks passed." />
+        ),
+        items: passes,
+        type: RuleType.PASS,
+      },
+      {
+        label: <Incomplete>{incomplete.length} Incomplete</Incomplete>,
+        panel: (
+          <Report
+            items={incomplete}
+            type={RuleType.INCOMPLETION}
+            empty="No accessibility checks incomplete."
+          />
+        ),
+        items: incomplete,
+        type: RuleType.INCOMPLETION,
+      },
+    ];
+  }, [results]);
+  return (
+    <>
+      {status === 'initial' && <Centered>Initializing...</Centered>}
+      {status === 'manual' && (
+        <>
+          <Centered>Manually run the accessibility scan.</Centered>
+          <ActionBar key="actionbar" actionItems={manualActionItems} />
+        </>
+      )}
+      {status === 'running' && (
+        <Centered>
+          <RotatingIcon inline icon="sync" /> Please wait while the accessibility scan is running
+          ...
+        </Centered>
+      )}
+      {(status === 'ready' || status === 'ran') && (
+        <>
+          <ScrollArea vertical horizontal>
+            <Tabs key="tabs" tabs={tabs} />
+          </ScrollArea>
+          <ActionBar key="actionbar" actionItems={readyActionItems} />
+        </>
+      )}
+      {status === 'error' && (
+        <Centered>
+          The accessibility scan encountered an error.
+          <br />
+          {typeof error === 'string' ? error : JSON.stringify(error)}
+        </Centered>
+      )}
+    </>
+  );
+};

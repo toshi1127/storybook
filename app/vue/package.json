@@ -1,50 +1,81 @@
 {
   "name": "@storybook/vue",
-  "version": "5.1.0-alpha.4",
+  "version": "6.1.0-beta.1",
   "description": "Storybook for Vue: Develop Vue Component in isolation with Hot Reloading.",
   "keywords": [
     "storybook"
   ],
-  "homepage": "https://github.com/storybooks/storybook/tree/master/app/vue",
+  "homepage": "https://github.com/storybookjs/storybook/tree/master/app/vue",
   "bugs": {
-    "url": "https://github.com/storybooks/storybook/issues"
+    "url": "https://github.com/storybookjs/storybook/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/storybooks/storybook.git",
+    "url": "https://github.com/storybookjs/storybook.git",
     "directory": "app/vue"
   },
   "license": "MIT",
   "main": "dist/client/index.js",
-  "jsnext:main": "src/client/index.js",
+  "types": "dist/client/index.d.ts",
   "bin": {
     "build-storybook": "./bin/build.js",
     "start-storybook": "./bin/index.js",
     "storybook-server": "./bin/index.js"
   },
+  "files": [
+    "bin/**/*",
+    "dist/**/*",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "ts3.4/**/*"
+  ],
   "scripts": {
     "prepare": "node ../../scripts/prepare.js"
   },
   "dependencies": {
-    "@storybook/core": "5.1.0-alpha.4",
-    "common-tags": "^1.8.0",
-    "core-js": "^2.6.5",
+    "@storybook/addons": "6.1.0-beta.1",
+    "@storybook/core": "6.1.0-beta.1",
+    "@types/webpack-env": "^1.15.2",
+    "core-js": "^3.0.1",
     "global": "^4.3.2",
-    "regenerator-runtime": "^0.12.1"
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "regenerator-runtime": "^0.13.7",
+    "ts-dedent": "^2.0.0",
+    "ts-loader": "^6.2.2",
+    "vue-docgen-api": "^4.33.1",
+    "vue-docgen-loader": "^1.5.0",
+    "webpack": "^4.43.0"
   },
   "devDependencies": {
-    "babel-preset-vue": "^2.0.2",
+    "@types/node": "^14.0.10",
+    "@types/webpack": "^4.41.12",
     "vue": "^2.6.8",
     "vue-loader": "^15.7.0",
     "vue-template-compiler": "^2.6.8"
   },
   "peerDependencies": {
+    "@babel/core": "*",
     "babel-loader": "^7.0.0 || ^8.0.0",
+    "css-loader": "*",
+    "ts-loader": "^6.2.2",
     "vue": "^2.6.8",
     "vue-loader": "^15.7.0",
     "vue-template-compiler": "^2.6.8"
   },
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "publishConfig": {
     "access": "public"
+  },
+  "gitHead": "763c233efc86849979db1c4c795035bd58f1ced9",
+  "typesVersions": {
+    "<3.8": {
+      "*": [
+        "ts3.4/*"
+      ]
+    }
   }
 }

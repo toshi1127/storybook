@@ -1,47 +1,71 @@
 {
   "name": "@storybook/svelte",
-  "version": "5.1.0-alpha.4",
+  "version": "6.1.0-beta.1",
   "description": "Storybook for Svelte: Develop Svelte Component in isolation with Hot Reloading.",
   "keywords": [
     "storybook"
   ],
-  "homepage": "https://github.com/storybooks/storybook/tree/master/app/svelte",
+  "homepage": "https://github.com/storybookjs/storybook/tree/master/app/svelte",
   "bugs": {
-    "url": "https://github.com/storybooks/storybook/issues"
+    "url": "https://github.com/storybookjs/storybook/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/storybooks/storybook.git",
+    "url": "https://github.com/storybookjs/storybook.git",
     "directory": "app/svelte"
   },
   "license": "MIT",
   "main": "dist/client/index.js",
-  "jsnext:main": "src/client/index.js",
+  "types": "dist/client/index.d.ts",
   "bin": {
     "build-storybook": "./bin/build.js",
     "start-storybook": "./bin/index.js",
     "storybook-server": "./bin/index.js"
   },
+  "files": [
+    "bin/**/*",
+    "dist/**/*",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "ts3.4/**/*"
+  ],
   "scripts": {
     "prepare": "node ../../scripts/prepare.js"
   },
   "dependencies": {
-    "@storybook/core": "5.1.0-alpha.4",
-    "common-tags": "^1.8.0",
-    "core-js": "^2.6.5",
+    "@storybook/addons": "6.1.0-beta.1",
+    "@storybook/core": "6.1.0-beta.1",
+    "core-js": "^3.0.1",
     "global": "^4.3.2",
-    "regenerator-runtime": "^0.12.1"
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "regenerator-runtime": "^0.13.7",
+    "sveltedoc-parser": "^3.0.4",
+    "ts-dedent": "^2.0.0"
   },
   "devDependencies": {
-    "svelte": "^2.16.1",
-    "svelte-loader": "^2.13.3"
+    "@types/webpack-env": "^1.15.2",
+    "svelte": "^3.18.1",
+    "svelte-loader": "^2.13.4"
   },
   "peerDependencies": {
-    "babel-loader": "^7.0.0 || ^8.0.0",
-    "svelte": "^2.7.2",
+    "@babel/core": "*",
+    "svelte": "^3.1.0",
     "svelte-loader": "^2.9.1"
+  },
+  "engines": {
+    "node": ">=8.0.0"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "gitHead": "763c233efc86849979db1c4c795035bd58f1ced9",
+  "typesVersions": {
+    "<3.8": {
+      "*": [
+        "ts3.4/*"
+      ]
+    }
   }
 }

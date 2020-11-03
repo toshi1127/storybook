@@ -8,17 +8,23 @@ describe('Button Component', () => {
   beforeEach(() => {
     target = document.createElement('div');
 
-    component = new Button({ target });
+    component = new Button.default({ target }); // eslint-disable-line new-cap
   });
 
   it('should render `text` property', () => {
-    const text = 'Hello world';
-    const expected = `Round corners\n  ${text}`;
+    return new Promise((done) => {
+      const text = 'Hello world';
+      const expected = `Round corners  ${text}`;
 
-    component.set({ text });
+      component.$on('afterUpdate', () => {
+        const componentText = target.firstChild.textContent.trim();
 
-    const componentText = target.firstChild.textContent.trim();
+        expect(componentText).toEqual(expected);
 
-    expect(componentText).toEqual(expected);
+        done();
+      });
+
+      component.$set({ text });
+    });
   });
 });

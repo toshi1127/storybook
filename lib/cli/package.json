@@ -1,19 +1,19 @@
 {
   "name": "@storybook/cli",
-  "version": "5.1.0-alpha.4",
+  "version": "6.1.0-beta.1",
   "description": "Storybook's CLI - easiest method of adding storybook to your projects",
   "keywords": [
     "cli",
     "generator",
     "storybook"
   ],
-  "homepage": "https://github.com/storybooks/storybook/tree/master/lib/cli",
+  "homepage": "https://github.com/storybookjs/storybook/tree/master/lib/cli",
   "bugs": {
-    "url": "https://github.com/storybooks/storybook/issues"
+    "url": "https://github.com/storybookjs/storybook/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/storybooks/storybook.git",
+    "url": "https://github.com/storybookjs/storybook.git",
     "directory": "lib/cli"
   },
   "license": "MIT",
@@ -22,55 +22,66 @@
     "getstorybook": "./bin/index.js",
     "sb": "./bin/index.js"
   },
+  "files": [
+    "bin/**/*",
+    "dist/**/*",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "ts3.4/**/*",
+    "versions.json"
+  ],
   "scripts": {
+    "prepare": "node ../../scripts/prepare.js && node ./scripts/generate-sb-packages-versions.js",
     "test": "cd test && ./run_tests.sh",
-    "test-latest-cra": "cd test && ./test_latest_cra.sh"
+    "postversion": "node ./scripts/generate-sb-packages-versions.js"
   },
   "dependencies": {
-    "@babel/core": "^7.3.4",
-    "@babel/preset-env": "^7.3.4",
-    "@babel/register": "^7.0.0",
-    "@storybook/codemod": "5.1.0-alpha.4",
-    "chalk": "^2.4.1",
-    "commander": "^2.19.0",
-    "core-js": "^2.6.5",
-    "cross-spawn": "^6.0.5",
-    "inquirer": "^6.2.0",
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "@storybook/codemod": "6.1.0-beta.1",
+    "@storybook/node-logger": "6.1.0-beta.1",
+    "@storybook/semver": "^7.3.2",
+    "chalk": "^4.0.0",
+    "commander": "^5.0.0",
+    "core-js": "^3.0.1",
+    "cross-spawn": "^7.0.0",
+    "envinfo": "^7.5.1",
+    "express": "^4.17.1",
+    "find-up": "^4.1.0",
+    "fs-extra": "^9.0.0",
+    "get-port": "^5.1.1",
+    "globby": "^11.0.0",
+    "inquirer": "^7.0.0",
     "jscodeshift": "^0.6.3",
-    "json5": "^2.1.0",
-    "merge-dirs": "^0.2.1",
-    "semver": "^5.6.0",
-    "shelljs": "^0.8.3",
-    "update-notifier": "^2.5.0"
+    "json5": "^2.1.1",
+    "leven": "^3.1.0",
+    "puppeteer-core": "^2.0.0",
+    "shelljs": "^0.8.4",
+    "strip-json-comments": "^3.0.1",
+    "update-notifier": "^4.0.0"
   },
   "devDependencies": {
-    "@storybook/addon-actions": "5.1.0-alpha.4",
-    "@storybook/addon-centered": "5.1.0-alpha.4",
-    "@storybook/addon-graphql": "5.1.0-alpha.4",
-    "@storybook/addon-info": "5.1.0-alpha.4",
-    "@storybook/addon-knobs": "5.1.0-alpha.4",
-    "@storybook/addon-links": "5.1.0-alpha.4",
-    "@storybook/addon-notes": "5.1.0-alpha.4",
-    "@storybook/addon-options": "5.1.0-alpha.4",
-    "@storybook/addon-storyshots": "5.1.0-alpha.4",
-    "@storybook/addons": "5.1.0-alpha.4",
-    "@storybook/angular": "5.1.0-alpha.4",
-    "@storybook/channel-postmessage": "5.1.0-alpha.4",
-    "@storybook/channel-websocket": "5.1.0-alpha.4",
-    "@storybook/channels": "5.1.0-alpha.4",
-    "@storybook/ember": "5.1.0-alpha.4",
-    "@storybook/html": "5.1.0-alpha.4",
-    "@storybook/marko": "5.1.0-alpha.4",
-    "@storybook/mithril": "5.1.0-alpha.4",
-    "@storybook/polymer": "5.1.0-alpha.4",
-    "@storybook/preact": "5.1.0-alpha.4",
-    "@storybook/react": "5.1.0-alpha.4",
-    "@storybook/react-native": "5.1.0-alpha.4",
-    "@storybook/riot": "5.1.0-alpha.4",
-    "@storybook/ui": "5.1.0-alpha.4",
-    "@storybook/vue": "5.1.0-alpha.4"
+    "@storybook/client-api": "6.1.0-beta.1",
+    "@types/cross-spawn": "^6.0.1",
+    "@types/inquirer": "^6.5.0",
+    "@types/puppeteer-core": "^2.0.0",
+    "@types/semver": "^7.2.0",
+    "@types/shelljs": "^0.8.7",
+    "@types/update-notifier": "^0.0.30"
+  },
+  "peerDependencies": {
+    "jest": "*"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "gitHead": "763c233efc86849979db1c4c795035bd58f1ced9",
+  "typesVersions": {
+    "<3.8": {
+      "*": [
+        "ts3.4/*"
+      ]
+    }
   }
 }

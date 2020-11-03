@@ -2,27 +2,40 @@
 
 import { h } from 'preact';
 
-import { storiesOf } from '@storybook/preact';
 import { action, actions } from '@storybook/addon-actions';
 import Button from '../Button';
 
-storiesOf('Addons|Actions', module)
-  .add('Action only', () => <Button onclick={action('log')}>Click me to log the action</Button>)
-  .add('Multiple actions', () => (
-    <Button {...actions('onclick', 'ondblclick')}>(Double) click me to log the action</Button>
-  ))
-  .add('Multiple actions, object', () => (
-    <Button {...actions({ onclick: 'click', ondblclick: 'double-click' })}>
-      (Double) click me to log the action
-    </Button>
-  ))
-  .add('Action and method', () => (
-    <Button
-      onclick={event => {
-        event.preventDefault();
-        action('method-log')(event.target);
-      }}
-    >
-      Click me to log the action
-    </Button>
-  ));
+export default {
+  title: 'Addons/Actions',
+};
+
+export const ActionOnly = () => <Button onclick={action('log')}>Click me to log the action</Button>;
+
+ActionOnly.storyName = 'Action only';
+
+export const MultipleActions = () => (
+  <Button {...actions('onclick', 'ondblclick')}>(Double) click me to log the action</Button>
+);
+
+MultipleActions.storyName = 'Multiple actions';
+
+export const MultipleActionsObject = () => (
+  <Button {...actions({ onclick: 'click', ondblclick: 'double-click' })}>
+    (Double) click me to log the action
+  </Button>
+);
+
+MultipleActionsObject.storyName = 'Multiple actions, object';
+
+export const ActionAndMethod = () => (
+  <Button
+    onclick={(event) => {
+      event.preventDefault();
+      action('method-log')(event.target);
+    }}
+  >
+    Click me to log the action
+  </Button>
+);
+
+ActionAndMethod.storyName = 'Action and method';

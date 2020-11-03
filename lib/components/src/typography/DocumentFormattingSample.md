@@ -52,7 +52,7 @@ Unordered
     - Ac tristique libero volutpat at
     * Facilisis in pretium nisl aliquet
     - Nulla volutpat aliquam velit
-- Very easy!
+- Hooray!
 
 Ordered
 
@@ -95,6 +95,10 @@ var foo = function(bar) {
 console.log(foo(5));
 ```
 
+## Horizontal Rule
+
+---
+
 ## Tables
 
 | Option | Description                                                               |
@@ -117,9 +121,19 @@ Right aligned columns
 
 [link with title](http://nodeca.github.io/pica/demo/ 'title text!')
 
+<!--lint disable no-literal-urls-->
 Autoconverted link https://github.com/nodeca/pica (enable linkify to see)
+<!--lint enable no-literal-urls-->
+
+# [Link](https://storybook.js.org/) in heading
+## [Link](https://storybook.js.org/) in heading
+### [Link](https://storybook.js.org/) in heading
+#### [Link](https://storybook.js.org/) in heading
+##### [Link](https://storybook.js.org/) in heading
+###### [Link](https://storybook.js.org/) in heading
 
 ## Images
 
 ![Minion](https://octodex.github.com/images/minion.png)
 ![Stormtroopocat](https://octodex.github.com/images/stormtroopocat.jpg 'The Stormtroopocat')
+

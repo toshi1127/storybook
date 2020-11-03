@@ -1,4 +1,5 @@
 import { mount, unregister, tag2 as tag } from 'riot';
+import * as riot from 'riot';
 import compiler from 'riot-compiler';
 import { document } from 'global';
 import { alreadyCompiledMarker, getRidOfRiotNoise, setConstructor } from '../compileStageFunctions';
@@ -24,10 +25,7 @@ function compileText(code, rootName) {
     code.substring(sourceCodeEndOfHtml);
   const sourceCode =
     rootName === 'root' ? `<root>${sourceCodeReformatted}</root>` : sourceCodeReformatted;
-  return compiler
-    .compile(sourceCode, {})
-    .replace(alreadyCompiledMarker, '')
-    .trim();
+  return compiler.compile(sourceCode, {}).replace(alreadyCompiledMarker, '').trim();
 }
 
 export default function renderStringified({
@@ -35,22 +33,28 @@ export default function renderStringified({
   template = `<${(tags[0] || []).boundAs || guessRootName(tags[0] || '')}/>`,
   tagConstructor,
 }) {
-  const tag2 = tag; // eslint-disable-line no-unused-vars
-  tags.forEach(oneTag => {
+  const tag2 = tag;
+  tags.forEach((input) => {
+    const oneTag = input || {};
     const rootName = oneTag.boundAs || guessRootName(oneTag);
-    const { content } = oneTag || {};
-    const code = content ? content.trim() : oneTag || '';
-    const compiled =
-      code.indexOf(alreadyCompiledMarker) !== -1 ? code : compileText(code, rootName);
+    const { content } = oneTag;
+    const code = content ? content.trim() : input || '';
+    const compiled = code.includes(alreadyCompiledMarker) ? code : compileText(code, rootName);
     unregister(rootName);
     eval(getRidOfRiotNoise(`${compiled}`)); // eslint-disable-line no-eval
   });
-  const sourceCode = `<root>${template}</root>`;
-  const compiledRootSource = !tagConstructor
-    ? `${compiler.compile(sourceCode, {})}`
-    : setConstructor(`${compiler.compile(sourceCode, {})}`, tagConstructor);
+  const sourceCode = compiler.compile(`<root>${template}</root>`, {});
 
-  if (template !== '<root/>') eval(getRidOfRiotNoise(compiledRootSource)); // eslint-disable-line no-eval
+  let final;
+  if (tagConstructor) {
+    final = setConstructor(sourceCode, tagConstructor);
+  } else {
+    final = sourceCode;
+  }
+
+  if (template !== '<root/>') {
+    eval(getRidOfRiotNoise(final)); // eslint-disable-line no-eval
+  }
 
   mount('*');
 }

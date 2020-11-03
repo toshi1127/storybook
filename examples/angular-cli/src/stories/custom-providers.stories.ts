@@ -1,37 +1,40 @@
-import { storiesOf, moduleMetadata } from '@storybook/angular';
+import { moduleMetadata } from '@storybook/angular';
 import { withKnobs, text } from '@storybook/addon-knobs';
 
 import { DummyService } from './moduleMetadata/dummy.service';
 import { ServiceComponent } from './moduleMetadata/service.component';
 
-storiesOf('Custom|Providers', module)
-  .addDecorator(
+export default {
+  title: 'Custom/Providers',
+  decorators: [
     moduleMetadata({
       imports: [],
       schemas: [],
       declarations: [],
       providers: [DummyService],
-    })
-  )
-  .add('Simple', () => ({
+    }),
+  ],
+};
+
+export const Simple = () => ({
+  component: ServiceComponent,
+  props: {
+    name: 'Static name',
+  },
+});
+
+Simple.storyName = 'Simple';
+
+export const WithKnobsStory = () => {
+  const name = text('name', 'Dynamic knob');
+
+  return {
     component: ServiceComponent,
     props: {
-      name: 'Static name',
+      name,
     },
-  }))
-  .add(
-    'With knobs',
-    () => {
-      const name = text('name', 'Dynamic knob');
+  };
+};
 
-      return {
-        component: ServiceComponent,
-        props: {
-          name,
-        },
-      };
-    },
-    {
-      decorators: [withKnobs],
-    }
-  );
+WithKnobsStory.storyName = 'With knobs';
+WithKnobsStory.decorators = [withKnobs];

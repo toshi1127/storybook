@@ -1,66 +1,55 @@
 import { document } from 'global';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
-import { Link, Location, navigate, LocationProvider } from '@reach/router';
+import {
+  Link,
+  Location,
+  navigate,
+  LocationProvider,
+  RouteComponentProps,
+  LocationContext,
+  NavigateFn,
+  History,
+} from '@reach/router';
 import { ToggleVisibility } from './visibility';
-import { queryFromString, storyDataFromString, getMatch } from './utils';
+import { queryFromString, parsePath, getMatch, StoryData } from './utils';
 
-interface Location {
-  search: string;
-  href: string;
-  origin: string;
-  protocol: 'http:' | 'https:';
-  host: string;
-  hostname: string;
-  port: string;
-  pathname: string;
-  hash: string;
-  state: {
-    key: string;
-  };
-  key: string;
-  reload: () => void;
-  replace: (url: string) => void;
-  assign: (url: string) => void;
-  toString: () => string;
-}
-
-interface RenderData {
+interface Other extends StoryData {
   path: string;
-  location: Location;
-  navigate: (to: string) => void;
-  viewMode?: string;
-  storyId?: string;
 }
+
+export type RenderData = Pick<LocationContext, 'location'> &
+  Partial<Pick<LocationContext, 'navigate'>> &
+  Other;
+
 interface MatchingData {
   match: null | { path: string };
 }
 
 interface QueryLocationProps {
-  children: (renderData: RenderData) => React.ReactNode;
+  children: (renderData: RenderData) => ReactNode;
 }
 interface QueryMatchProps {
   path: string;
   startsWith: boolean;
-  children: (matchingData: MatchingData) => React.ReactNode;
+  children: (matchingData: MatchingData) => ReactNode;
 }
 interface RouteProps {
   path: string;
-  startsWith: boolean;
-  hideOnly: boolean;
-  children: (renderData: RenderData) => React.ReactNode;
+  startsWith?: boolean;
+  hideOnly?: boolean;
+  children: ReactNode;
 }
 
-interface QueryLinkProps {
+export interface QueryLinkProps {
   to: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-const getBase = () => document.location.pathname + '?';
+const getBase = () => `${document.location.pathname}?`;
 
-const queryNavigate = (to: string) => {
-  navigate(`${getBase()}path=${to}`);
-};
+const queryNavigate: NavigateFn = (to: string | number) =>
+  typeof to === 'number' ? navigate(to) : navigate(`${getBase()}path=${to}`);
 
 // A component that will navigate to a new location/path when clicked
 const QueryLink = ({ to, children, ...rest }: QueryLinkProps) => (
@@ -74,18 +63,19 @@ QueryLink.displayName = 'QueryLink';
 // and will be called whenever it changes when it changes
 const QueryLocation = ({ children }: QueryLocationProps) => (
   <Location>
-    {({ location }: { location: Location }) => {
+    {({ location }: RouteComponentProps): ReactNode => {
       const { path } = queryFromString(location.search);
-      const { viewMode, storyId } = storyDataFromString(path);
-      return children({ path, location, navigate: queryNavigate, viewMode, storyId });
+      const { viewMode, storyId, refId } = parsePath(path);
+
+      return children({ path, location, navigate: queryNavigate, viewMode, storyId, refId });
     }}
   </Location>
 );
 QueryLocation.displayName = 'QueryLocation';
 
 // A render-prop component for rendering when a certain path is hit.
-// It's immensly similar to `Location` but it receives an addition data property: `match`.
-// match has a truethy value when the path is hit.
+// It's immensely similar to `Location` but it receives an addition data property: `match`.
+// match has a truthy value when the path is hit.
 const QueryMatch = ({ children, path: targetPath, startsWith = false }: QueryMatchProps) => (
   <QueryLocation>
     {({ path: urlPath, ...rest }) =>
@@ -117,3 +107,4 @@ export { QueryLocation as Location };
 export { Route };
 export { queryNavigate as navigate };
 export { LocationProvider };
+export { History };

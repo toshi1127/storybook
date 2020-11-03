@@ -2,9 +2,10 @@
 const path = require('path');
 const shell = require('shelljs');
 const chalk = require('chalk');
+const fs = require('fs');
 const log = require('npmlog');
-const { babelify } = require('./compile-js');
-const { tscfy } = require('./compile-ts');
+const { babelify } = require('./utils/compile-babel');
+const { tscfy } = require('./utils/compile-tsc');
 
 function getPackageJson() {
   const modulePath = path.resolve('./');
@@ -17,19 +18,54 @@ function removeDist() {
   shell.rm('-rf', 'dist');
 }
 
-function removeTsFromDist() {
-  // add .ts filtering to babel args and remove after babel - 7 is adopted
+const ignore = [
+  '__mocks__',
+  '__snapshots__',
+  '__testfixtures__',
+  '__tests__',
+  '/tests/',
+  /.+\.test\..+/,
+];
+
+function cleanup() {
+  // remove files after babel --copy-files output
   // --copy-files option doesn't work with --ignore
-  // https://github.com/babel/babel/issues/5404
+  // https://github.com/babel/babel/issues/6226
+  if (fs.existsSync(path.join(process.cwd(), 'dist'))) {
+    const inStoryshots = process.cwd().includes('storyshots'); // This is a helper the exclude storyshots folder from the regex
+    const files = shell.find('dist').filter((filePath) => {
+      // Do not remove folder
+      // And do not clean anything for:
+      // - @storybook/cli/dist/generators/**/template*
+      // - @storybook/cli/dist/frameworks/*
+      // because these are the template files
+      // that will be copied to init SB on users' projects
 
-  const tsFiles = shell.find('dist').filter(tsFile => tsFile.match(/\.ts$/));
+      if (
+        fs.lstatSync(filePath).isDirectory() ||
+        /generators\/.+\/template.*/.test(filePath) ||
+        (/dist\/frameworks\/.*/.test(filePath) && !inStoryshots)
+      ) {
+        return false;
+      }
 
-  if (tsFiles.length) {
-    shell.rm(tsFiles);
+      // Remove all copied TS files (but not the .d.ts)
+      if (/\.tsx?$/.test(filePath) && !/\.d\.ts$/.test(filePath)) {
+        return true;
+      }
+
+      return ignore.reduce((acc, pattern) => {
+        return acc || !!filePath.match(pattern);
+      }, false);
+    });
+    if (files.length) {
+      shell.rm('-f', ...files);
+    }
   }
 }
 
-function logError(type, packageJson) {
+function logError(type, packageJson, errorLogs) {
+  log.error(`FAILED (${type}) : ${errorLogs}`);
   log.error(
     `FAILED to compile ${type}: ${chalk.bold(`${packageJson.name}@${packageJson.version}`)}`
   );
@@ -38,12 +74,10 @@ function logError(type, packageJson) {
 const packageJson = getPackageJson();
 
 removeDist();
-if (packageJson && packageJson.types && packageJson.types.indexOf('d.ts') !== -1) {
-  tscfy({ errorCallback: () => logError('ts', packageJson) });
-} else {
-  babelify({ errorCallback: () => logError('js', packageJson) });
-  removeTsFromDist();
-  tscfy({ errorCallback: () => logError('ts', packageJson) });
-}
+
+babelify({ errorCallback: (errorLogs) => logError('js', packageJson, errorLogs) });
+tscfy({ errorCallback: (errorLogs) => logError('ts', packageJson, errorLogs) });
+
+cleanup();
 
 console.log(chalk.gray(`Built: ${chalk.bold(`${packageJson.name}@${packageJson.version}`)}`));

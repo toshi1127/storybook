@@ -1,8 +1,16 @@
 // FIXME: svgr issue @igor-dv
 
-// import React from 'react';
-// import { storiesOf } from '@storybook/react';
-//
-// import App from '../App';
-//
-// storiesOf('App', module).add('full app', () => <App />);
+import React from 'react';
+
+import App from '../App';
+
+export default {
+  title: 'App',
+  parameters: {
+    layout: 'fullscreen',
+  },
+};
+
+export const FullApp = () => <App />;
+
+FullApp.storyName = 'full app';

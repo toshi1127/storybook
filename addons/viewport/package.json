@@ -1,41 +1,67 @@
 {
   "name": "@storybook/addon-viewport",
-  "version": "5.1.0-alpha.4",
+  "version": "6.1.0-beta.1",
   "description": "Storybook addon to change the viewport size to mobile",
   "keywords": [
     "addon",
     "storybook"
   ],
-  "homepage": "https://github.com/storybooks/storybook/tree/master/addons/viewport",
+  "homepage": "https://github.com/storybookjs/storybook/tree/master/addons/viewport",
   "bugs": {
-    "url": "https://github.com/storybooks/storybook/issues"
+    "url": "https://github.com/storybookjs/storybook/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/storybooks/storybook.git",
+    "url": "https://github.com/storybookjs/storybook.git",
     "directory": "addons/viewport"
   },
   "license": "MIT",
-  "main": "preview.js",
+  "main": "dist/preview.js",
+  "types": "dist/preview.d.ts",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "ts3.4/**/*"
+  ],
   "scripts": {
     "prepare": "node ../../scripts/prepare.js"
   },
   "dependencies": {
-    "@storybook/addons": "5.1.0-alpha.4",
-    "@storybook/client-logger": "5.1.0-alpha.4",
-    "@storybook/components": "5.1.0-alpha.4",
-    "@storybook/core-events": "5.1.0-alpha.4",
-    "@storybook/theming": "5.1.0-alpha.4",
-    "core-js": "^2.6.5",
+    "@storybook/addons": "6.1.0-beta.1",
+    "@storybook/api": "6.1.0-beta.1",
+    "@storybook/client-logger": "6.1.0-beta.1",
+    "@storybook/components": "6.1.0-beta.1",
+    "@storybook/core-events": "6.1.0-beta.1",
+    "@storybook/theming": "6.1.0-beta.1",
+    "core-js": "^3.0.1",
     "global": "^4.3.2",
     "memoizerific": "^1.11.3",
     "prop-types": "^15.7.2",
-    "util-deprecate": "^1.0.2"
+    "regenerator-runtime": "^0.13.7"
   },
   "peerDependencies": {
-    "react": "*"
+    "react": "^16.8.0 || ^17.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public"
+  },
+  "gitHead": "763c233efc86849979db1c4c795035bd58f1ced9",
+  "typesVersions": {
+    "<3.8": {
+      "*": [
+        "ts3.4/*"
+      ]
+    }
   }
 }

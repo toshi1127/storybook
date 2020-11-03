@@ -12,18 +12,18 @@ function cleanup {
 trap cleanup EXIT
 
 fixtures_dir='fixtures'
-teamcity=0
+story_format='csf'
 
 # parse command-line options
 # '-f' sets fixtures directory
-# '-t' adds teamcity reporting
-while getopts ":tf:" opt; do
+# '-s' sets story format to use
+while getopts ":f:s:" opt; do
   case $opt in
     f)
       fixtures_dir=$OPTARG
       ;;
-    t)
-      teamcity=1
+    s)
+      story_format=$OPTARG
       ;;
   esac
 done
@@ -38,9 +38,19 @@ do
   cd $dir
   echo "Running storybook-cli in $dir"
 
-  # run @storybook/cli
-  ../../../bin/index.js init --skip-install
-
+  case $story_format in
+  csf)
+    yarn sb init --skip-install --yes
+    ;;
+  mdx)
+    if [[ $dir =~ (react_native*|angular-cli-v6|ember-cli|marko|meteor|mithril|riot) ]]
+    then
+      yarn sb init --skip-install --yes
+    else
+      yarn sb init --skip-install --yes --story-format mdx
+    fi
+    ;;
+  esac
   cd ..
 done
 
@@ -57,23 +67,11 @@ do
   # check that storybook starts without errors
   cd $dir
 
-  if [ $teamcity -eq 1 ]
-  then
-    echo "##teamcity[testStarted name='$dir' captureStandardOutput='true']"
-  fi
-
   echo "Running smoke test in $dir"
   failed=0
   yarn storybook --smoke-test --quiet || failed=1
 
-  if [ $teamcity -eq 1 ]
-  then
-    if [ $failed -eq 1 ]
-    then
-      echo "##teamcity[testFailed name='$dir']"
-    fi
-    echo "##teamcity[testFinished name='$dir']"
-  elif [ $failed -eq 1 ]
+  if [ $failed -eq 1 ]
   then
     exit 1
   fi

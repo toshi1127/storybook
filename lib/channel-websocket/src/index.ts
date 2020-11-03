@@ -1,6 +1,6 @@
 import { WebSocket } from 'global';
-import JSON from 'json-fn';
 import { Channel, ChannelHandler } from '@storybook/channels';
+import { isJSON, parse, stringify } from 'telejson';
 
 type OnError = (message: Event) => void;
 
@@ -17,8 +17,11 @@ interface CreateChannelArgs {
 
 export class WebsocketTransport {
   private socket: WebSocket;
+
   private handler: ChannelHandler;
+
   private buffer: string[] = [];
+
   private isReady = false;
 
   constructor({ url, onError }: WebsocketTransportArgs) {
@@ -42,14 +45,14 @@ export class WebsocketTransport {
   }
 
   private sendNow(event: any) {
-    const data = JSON.stringify(event);
+    const data = stringify(event, { maxDepth: 15, allowFunction: true });
     this.socket.send(data);
   }
 
   private flush() {
-    const buffer = this.buffer;
+    const { buffer } = this;
     this.buffer = [];
-    buffer.forEach(event => this.send(event));
+    buffer.forEach((event) => this.send(event));
   }
 
   private connect(url: string, onError: OnError) {
@@ -58,11 +61,11 @@ export class WebsocketTransport {
       this.isReady = true;
       this.flush();
     };
-    this.socket.onmessage = e => {
-      const event = JSON.parse(e.data);
+    this.socket.onmessage = ({ data }) => {
+      const event = typeof data === 'string' && isJSON(data) ? parse(data) : data;
       this.handler(event);
     };
-    this.socket.onerror = e => {
+    this.socket.onerror = (e) => {
       if (onError) {
         onError(e);
       }

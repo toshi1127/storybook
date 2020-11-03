@@ -1,30 +1,44 @@
+// @ts-ignore
+import { document } from 'global';
 import { enableProdMode, NgModule, Component, NgModuleRef, Type } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserModule } from '@angular/platform-browser';
+import { ReplaySubject } from 'rxjs';
+import { StoryFn } from '@storybook/addons';
 import { AppComponent } from './components/app.component';
 import { STORY } from './app.token';
-import { NgModuleMetadata, IStoryFn, NgStory } from './types';
+import { NgModuleMetadata, StoryFnAngularReturnType } from '../types';
+
+declare global {
+  interface Window {
+    NODE_ENV: 'string' | 'development' | undefined;
+  }
+}
 
 let platform: any = null;
-let promises: Array<Promise<NgModuleRef<any>>> = [];
+let promises: Promise<NgModuleRef<any>>[] = [];
 
 const moduleClass = class DynamicModule {};
 const componentClass = class DynamicComponent {};
 
 type DynamicComponentType = typeof componentClass;
 
+const storyData = new ReplaySubject(1);
+
 const getModule = (
-  declarations: Array<Type<any> | any[]>,
-  entryComponents: Array<Type<any> | any[]>,
-  bootstrap: Array<Type<any> | any[]>,
-  data: NgStory,
+  declarations: (Type<any> | any[])[],
+  entryComponents: (Type<any> | any[])[],
+  bootstrap: (Type<any> | any[])[],
+  data: StoryFnAngularReturnType,
   moduleMetadata: NgModuleMetadata
 ) => {
+  storyData.next(data);
+
   const moduleMeta = {
     declarations: [...declarations, ...(moduleMetadata.declarations || [])],
     imports: [BrowserModule, FormsModule, ...(moduleMetadata.imports || [])],
-    providers: [{ provide: STORY, useValue: { ...data } }, ...(moduleMetadata.providers || [])],
+    providers: [{ provide: STORY, useValue: storyData }, ...(moduleMetadata.providers || [])],
     entryComponents: [...entryComponents, ...(moduleMetadata.entryComponents || [])],
     schemas: [...(moduleMetadata.schemas || [])],
     bootstrap: [...bootstrap],
@@ -40,11 +54,77 @@ const createComponentFromTemplate = (template: string, styles: string[]) => {
   })(componentClass);
 };
 
-const initModule = (storyFn: IStoryFn) => {
+const extractNgModuleMetadata = (importItem: any): NgModule => {
+  const target = importItem && importItem.ngModule ? importItem.ngModule : importItem;
+  const decoratorKey = '__annotations__';
+  const decorators: any[] =
+    Reflect &&
+    Reflect.getOwnPropertyDescriptor &&
+    Reflect.getOwnPropertyDescriptor(target, decoratorKey)
+      ? Reflect.getOwnPropertyDescriptor(target, decoratorKey).value
+      : target[decoratorKey];
+
+  if (!decorators || decorators.length === 0) {
+    return null;
+  }
+
+  const ngModuleDecorator: NgModule | undefined = decorators.find(
+    (decorator) => decorator instanceof NgModule
+  );
+  if (!ngModuleDecorator) {
+    return null;
+  }
+  return ngModuleDecorator;
+};
+
+const getExistenceOfComponentInModules = (
+  component: any,
+  declarations: any[],
+  imports: any[]
+): boolean => {
+  if (declarations && declarations.some((declaration) => declaration === component)) {
+    // Found component in declarations array
+    return true;
+  }
+  if (!imports) {
+    return false;
+  }
+
+  return imports.some((importItem) => {
+    const extractedNgModuleMetadata = extractNgModuleMetadata(importItem);
+    if (!extractedNgModuleMetadata) {
+      // Not an NgModule
+      return false;
+    }
+    return getExistenceOfComponentInModules(
+      component,
+      extractedNgModuleMetadata.declarations,
+      extractedNgModuleMetadata.imports
+    );
+  });
+};
+
+const initModule = (storyFn: StoryFn<StoryFnAngularReturnType>) => {
   const storyObj = storyFn();
   const { component, template, props, styles, moduleMetadata = {} } = storyObj;
 
-  let AnnotatedComponent = template ? createComponentFromTemplate(template, styles) : component;
+  const isCreatingComponentFromTemplate = Boolean(template);
+
+  const AnnotatedComponent = isCreatingComponentFromTemplate
+    ? createComponentFromTemplate(template, styles)
+    : component;
+
+  const componentRequiresDeclaration =
+    isCreatingComponentFromTemplate ||
+    !getExistenceOfComponentInModules(
+      component,
+      moduleMetadata.declarations,
+      moduleMetadata.imports
+    );
+
+  const componentDeclarations = componentRequiresDeclaration
+    ? [AppComponent, AnnotatedComponent]
+    : [AppComponent];
 
   const story = {
     component: AnnotatedComponent,
@@ -52,7 +132,7 @@ const initModule = (storyFn: IStoryFn) => {
   };
 
   return getModule(
-    [AppComponent, AnnotatedComponent],
+    componentDeclarations,
     [AnnotatedComponent],
     [AppComponent],
     story,
@@ -69,15 +149,20 @@ const insertDynamicRoot = () => {
 const draw = (newModule: DynamicComponentType): void => {
   if (!platform) {
     insertDynamicRoot();
-    try {
-      enableProdMode();
-    } catch (e) {}
+    // eslint-disable-next-line no-undef
+    if (typeof NODE_ENV === 'string' && NODE_ENV !== 'development') {
+      try {
+        enableProdMode();
+      } catch (e) {
+        //
+      }
+    }
 
     platform = platformBrowserDynamic();
     promises.push(platform.bootstrapModule(newModule));
   } else {
-    Promise.all(promises).then(modules => {
-      modules.forEach(mod => mod.destroy());
+    Promise.all(promises).then((modules) => {
+      modules.forEach((mod) => mod.destroy());
 
       insertDynamicRoot();
       promises = [];
@@ -86,6 +171,10 @@ const draw = (newModule: DynamicComponentType): void => {
   }
 };
 
-export const renderNgApp = (storyFn: IStoryFn) => {
-  draw(initModule(storyFn));
+export const renderNgApp = (storyFn: StoryFn<StoryFnAngularReturnType>, forced: boolean) => {
+  if (!forced) {
+    draw(initModule(storyFn));
+  } else {
+    storyData.next(storyFn());
+  }
 };

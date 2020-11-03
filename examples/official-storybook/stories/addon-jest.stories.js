@@ -1,9 +1,12 @@
 import React from 'react';
-import { storiesOf } from '@storybook/react';
-import { withTests } from '@storybook/addon-jest';
+import { withTests as withTestsHOC } from '@storybook/addon-jest';
 
 import results from './addon-jest.testresults.json';
 
-storiesOf('Addons|Jest', module)
-  .addDecorator(withTests({ results }))
-  .add('withTests', () => <p>Hello</p>, { jest: 'addon-jest' });
+export default {
+  title: 'Addons/Jest',
+  decorators: [withTestsHOC({ results })],
+};
+
+export const WithTests = () => <p>Hello</p>;
+WithTests.parameters = { jest: 'addon-jest' };

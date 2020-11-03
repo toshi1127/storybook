@@ -1,57 +1,87 @@
 {
   "name": "@storybook/react",
-  "version": "5.1.0-alpha.4",
+  "version": "6.1.0-beta.1",
   "description": "Storybook for React: Develop React Component in isolation with Hot Reloading.",
   "keywords": [
     "storybook"
   ],
-  "homepage": "https://github.com/storybooks/storybook/tree/master/app/react",
+  "homepage": "https://github.com/storybookjs/storybook/tree/master/app/react",
   "bugs": {
-    "url": "https://github.com/storybooks/storybook/issues"
+    "url": "https://github.com/storybookjs/storybook/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/storybooks/storybook.git",
+    "url": "https://github.com/storybookjs/storybook.git",
     "directory": "app/react"
   },
   "license": "MIT",
   "main": "dist/client/index.js",
-  "jsnext:main": "src/client/index.js",
+  "types": "dist/client/index.d.ts",
   "bin": {
     "build-storybook": "./bin/build.js",
     "start-storybook": "./bin/index.js",
     "storybook-server": "./bin/index.js"
   },
+  "files": [
+    "bin/**/*",
+    "dist/**/*",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "ts3.4/**/*"
+  ],
   "scripts": {
     "prepare": "node ../../scripts/prepare.js"
   },
   "dependencies": {
-    "@babel/plugin-transform-react-constant-elements": "^7.2.0",
-    "@babel/preset-flow": "^7.0.0",
-    "@babel/preset-react": "^7.0.0",
-    "@storybook/core": "5.1.0-alpha.4",
-    "@storybook/node-logger": "5.1.0-alpha.4",
-    "@svgr/webpack": "^4.0.3",
+    "@babel/preset-flow": "^7.12.1",
+    "@babel/preset-react": "^7.12.1",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.2",
+    "@storybook/addons": "6.1.0-beta.1",
+    "@storybook/core": "6.1.0-beta.1",
+    "@storybook/node-logger": "6.1.0-beta.1",
+    "@storybook/semver": "^7.3.2",
+    "@svgr/webpack": "^5.4.0",
+    "@types/webpack-env": "^1.15.2",
+    "babel-plugin-add-react-displayname": "^0.0.5",
     "babel-plugin-named-asset-import": "^0.3.1",
-    "babel-plugin-react-docgen": "^2.0.2",
-    "babel-preset-react-app": "^7.0.2",
-    "common-tags": "^1.8.0",
-    "core-js": "^2.6.5",
+    "babel-plugin-react-docgen": "^4.2.1",
+    "core-js": "^3.0.1",
     "global": "^4.3.2",
-    "lodash": "^4.17.11",
-    "mini-css-extract-plugin": "^0.5.0",
+    "lodash": "^4.17.15",
     "prop-types": "^15.7.2",
-    "react-dev-utils": "^8.0.0",
-    "regenerator-runtime": "^0.12.1",
-    "semver": "^5.6.0",
-    "webpack": "^4.29.6"
+    "react-dev-utils": "^10.0.0",
+    "react-docgen-typescript-plugin": "^0.6.0",
+    "react-refresh": "^0.8.3",
+    "regenerator-runtime": "^0.13.7",
+    "ts-dedent": "^2.0.0",
+    "webpack": "^4.43.0"
+  },
+  "devDependencies": {
+    "@storybook/client-api": "6.1.0-beta.1",
+    "@types/node": "^14.0.10",
+    "@types/webpack": "^4.41.12"
   },
   "peerDependencies": {
-    "babel-loader": "^7.0.0 || ^8.0.0",
-    "react": "*",
-    "react-dom": "*"
+    "@babel/core": "^7.11.5",
+    "react": "^16.8.0 || ^17.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0"
+  },
+  "engines": {
+    "node": ">=8.0.0"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "gitHead": "763c233efc86849979db1c4c795035bd58f1ced9",
+  "typesVersions": {
+    "<3.8": {
+      "types-6-0": [
+        "ts3.4/dist/client/preview/types-6-0.d.ts"
+      ],
+      "*": [
+        "ts3.4/*"
+      ]
+    }
   }
 }

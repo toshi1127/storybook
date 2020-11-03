@@ -1,4 +1,5 @@
-import { color, typography, ThemeVars } from '../base';
+import { color, typography } from '../base';
+import { ThemeVars } from '../types';
 
 const theme: ThemeVars = {
   base: 'dark',
@@ -20,6 +21,7 @@ const theme: ThemeVars = {
   // Text colors
   textColor: color.lightest,
   textInverseColor: color.darkest,
+  textMutedColor: color.mediumdark,
 
   // Toolbar default and active colors
   barTextColor: '#999999',

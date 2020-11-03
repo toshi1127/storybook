@@ -1,16 +1,18 @@
-import hbs from 'htmlbars-inline-precompile';
-import { storiesOf } from '@storybook/ember';
+import { hbs } from 'ember-cli-htmlbars';
 import { action } from '@storybook/addon-actions';
 
-storiesOf('Addon|Actions', module)
-  .addParameters({
+export default {
+  title: 'Addon/Actions',
+  parameters: {
     options: {
       selectedPanel: 'storybook/actions/panel',
     },
-  })
-  .add('button', () => ({
-    template: hbs`<button {{action onClick}}>Click Me</button>`,
-    context: {
-      onClick: action('clicked'),
-    },
-  }));
+  },
+};
+
+export const Button = () => ({
+  template: hbs`<button {{action onClick}}>Click Me</button>`,
+  context: {
+    onClick: action('clicked'),
+  },
+});

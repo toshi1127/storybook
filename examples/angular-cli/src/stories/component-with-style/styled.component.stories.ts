@@ -1,6 +1,11 @@
-import { storiesOf } from '@storybook/angular';
 import { StyledComponent } from './styled.component';
 
-storiesOf('Custom|styleUrls', module).add('Component with styles', () => ({
+export default {
+  title: 'Custom/styleUrls',
+};
+
+export const ComponentWithStyles = () => ({
   component: StyledComponent,
-}));
+});
+
+ComponentWithStyles.storyName = 'Component with styles';

@@ -9,15 +9,21 @@
     "dev": "node build/dev-server.js",
     "start": "node build/dev-server.js"
   },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
   "dependencies": {
     "vue": "^2.6.8"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
     "@babel/plugin-transform-runtime": "^7.1.0",
-    "@babel/preset-env": "^7.3.4",
+    "@babel/preset-env": "^7.4.1",
     "@babel/preset-stage-2": "^7.0.0",
     "@babel/register": "^7.0.0",
+    "@storybook/semver": "^7.3.2",
     "autoprefixer": "^9.4.9",
     "babel-core": "^7.0.0-bridge.0",
     "babel-loader": "^8.0.5",
@@ -33,18 +39,17 @@
     "friendly-errors-webpack-plugin": "^1.7.0",
     "html-webpack-plugin": "^4.0.0-beta.2",
     "http-proxy-middleware": "^0.19.1",
-    "opn": "^5.4.0",
+    "open": "^6.1.0",
     "optimize-css-assets-webpack-plugin": "^2.0.0",
     "ora": "^3.2.0",
     "rimraf": "^2.6.3",
-    "semver": "^5.6.0",
-    "shelljs": "^0.8.3",
+    "shelljs": "^0.8.4",
     "url-loader": "^1.1.2",
     "vue-loader": "15.7.0",
     "vue-style-loader": "^4.1.2",
     "vue-template-compiler": "^2.6.8",
-    "webpack": "^4.29.6",
-    "webpack-bundle-analyzer": "^3.1.0",
+    "webpack": "^4.33.0",
+    "webpack-bundle-analyzer": "^3.3.2",
     "webpack-dev-middleware": "^3.6.0",
     "webpack-hot-middleware": "^2.24.3",
     "webpack-merge": "^4.2.1"
@@ -52,10 +57,5 @@
   "engines": {
     "node": ">= 4.0.0",
     "npm": ">= 3.0.0"
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
-  ]
+  }
 }

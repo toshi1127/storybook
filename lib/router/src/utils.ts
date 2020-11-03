@@ -1,48 +1,29 @@
 import qs from 'qs';
 import memoize from 'memoizerific';
 
-interface StoryData {
+export interface StoryData {
   viewMode?: string;
   storyId?: string;
+  refId?: string;
 }
 
-const knownViewModesRegex = /(story|info)/;
-const splitPath = /\/([^/]+)\/([^/]+)?/;
+const splitPathRegex = /\/([^/]+)\/(?:(.*)_)?([^/]+)?/;
 
-// Remove punctuation https://gist.github.com/davidjrice/9d2af51100e41c6c4b4a
-export const sanitize = (string: string) => {
-  return string
-    .toLowerCase()
-    .replace(/[ ’–—―′¿'`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
-};
-
-const sanitizeSafe = (string: string, part: string) => {
-  const sanitized = sanitize(string);
-  if (sanitized === '') {
-    throw new Error(`Invalid ${part} '${string}', must include alphanumeric characters`);
-  }
-  return sanitized;
-};
-
-export const toId = (kind: string, name: string) =>
-  `${sanitizeSafe(kind, 'kind')}--${sanitizeSafe(name, 'name')}`;
-
-export const storyDataFromString: (path: string) => StoryData = memoize(1000)(
+export const parsePath: (path: string | undefined) => StoryData = memoize(1000)(
   (path: string | undefined | null) => {
     const result: StoryData = {
       viewMode: undefined,
       storyId: undefined,
+      refId: undefined,
     };
 
     if (path) {
-      const [, viewMode, storyId] = path.match(splitPath) || [undefined, undefined, undefined];
-      if (viewMode && viewMode.match(knownViewModesRegex)) {
+      const [, viewMode, refId, storyId] = path.toLowerCase().match(splitPathRegex) || [];
+      if (viewMode) {
         Object.assign(result, {
           viewMode,
           storyId,
+          refId,
         });
       }
     }
@@ -50,13 +31,21 @@ export const storyDataFromString: (path: string) => StoryData = memoize(1000)(
   }
 );
 
-export const queryFromString = memoize(1000)(s => qs.parse(s, { ignoreQueryPrefix: true }));
+interface Query {
+  [key: string]: any;
+}
+
+export const queryFromString = memoize(1000)(
+  (s: string): Query => qs.parse(s, { ignoreQueryPrefix: true })
+);
 export const queryFromLocation = (location: { search: string }) => queryFromString(location.search);
-export const stringifyQuery = (query: object) =>
+export const stringifyQuery = (query: Query) =>
   qs.stringify(query, { addQueryPrefix: true, encode: false });
 
+type Match = { path: string };
+
 export const getMatch = memoize(1000)(
-  (current: string, target: string, startsWith: boolean = true) => {
+  (current: string, target: string, startsWith = true): Match | null => {
     const startsWithTarget = current && startsWith && current.startsWith(target);
     const currentIsTarget = typeof target === 'string' && current === target;
     const matchTarget = current && target && current.match(target);
@@ -64,6 +53,7 @@ export const getMatch = memoize(1000)(
     if (startsWithTarget || currentIsTarget || matchTarget) {
       return { path: current };
     }
+
     return null;
   }
 );

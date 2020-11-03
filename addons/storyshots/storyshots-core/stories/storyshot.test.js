@@ -1,5 +1,7 @@
 import path from 'path';
-import initStoryshots, { multiSnapshotWithOptions } from '../src';
+import initStoryshots, { multiSnapshotWithOptions } from '../dist';
+
+jest.mock('@storybook/node-logger');
 
 // with react-test-renderer
 initStoryshots({

@@ -1,14 +1,14 @@
 {
   "name": "@storybook/ember",
-  "version": "5.1.0-alpha.4",
+  "version": "6.1.0-beta.1",
   "description": "Storybook for Ember: Develop Ember Component in isolation with Hot Reloading.",
-  "homepage": "https://github.com/storybooks/storybook/tree/master/app/ember",
+  "homepage": "https://github.com/storybookjs/storybook/tree/master/app/ember",
   "bugs": {
-    "url": "https://github.com/storybooks/storybook/issues"
+    "url": "https://github.com/storybookjs/storybook/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/storybooks/storybook.git",
+    "url": "https://github.com/storybookjs/storybook.git",
     "directory": "app/ember"
   },
   "license": "MIT",
@@ -19,24 +19,45 @@
     "start-storybook": "./bin/index.js",
     "storybook-server": "./bin/index.js"
   },
+  "files": [
+    "bin/**/*",
+    "dist/**/*",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "ts3.4/**/*"
+  ],
   "scripts": {
     "prepare": "node ../../scripts/prepare.js"
   },
   "dependencies": {
-    "@ember/test-helpers": "^1.5.0",
-    "@storybook/core": "5.1.0-alpha.4",
-    "common-tags": "^1.8.0",
-    "core-js": "^2.6.5",
+    "@ember/test-helpers": "^1.7.0",
+    "@storybook/core": "6.1.0-beta.1",
+    "core-js": "^3.0.1",
     "global": "^4.3.2",
-    "regenerator-runtime": "^0.12.1"
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "regenerator-runtime": "^0.13.7",
+    "ts-dedent": "^2.0.0"
   },
   "peerDependencies": {
-    "babel-loader": "^7.0.0 || ^8.0.0",
-    "babel-plugin-ember-modules-api-polyfill": "^2.4.0",
-    "ember-cli-htmlbars-inline-precompile": "^1.0.3",
-    "ember-source": "^3.4.0"
+    "@babel/core": "*",
+    "babel-plugin-ember-modules-api-polyfill": "^2.12.0",
+    "babel-plugin-htmlbars-inline-precompile": "2 || 3",
+    "ember-source": "^3.16.0"
+  },
+  "engines": {
+    "node": ">=8.0.0"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "gitHead": "763c233efc86849979db1c4c795035bd58f1ced9",
+  "typesVersions": {
+    "<3.8": {
+      "*": [
+        "ts3.4/*"
+      ]
+    }
   }
 }

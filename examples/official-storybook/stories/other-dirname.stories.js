@@ -1,10 +1,10 @@
 import React from 'react';
 import base from 'paths.macro';
 
-import { storiesOf } from '@storybook/react';
-
 import BaseButton from '../components/BaseButton';
 
-storiesOf(`Other|${base}/Dirname Example`, module)
-  .add('story 1', () => <BaseButton label="Story 1" />)
-  .add('story 2', () => <BaseButton label="Story 2" />);
+export const story1 = () => <BaseButton label="Story 1" />;
+story1.storyName = 'story 1';
+
+export const story2 = () => <BaseButton label="Story 2" />;
+story2.storyName = 'story 2';

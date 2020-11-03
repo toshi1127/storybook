@@ -51,8 +51,20 @@ describe('Channel', () => {
     it('should do the same as addListener', () => {
       const eventName = 'event1';
 
-      channel.addListener(eventName, jest.fn());
+      channel.on(eventName, jest.fn());
       expect(channel.listeners(eventName).length).toBe(1);
+    });
+  });
+
+  describe('method:off', () => {
+    it('should remove listeners', () => {
+      const eventName = 'event1';
+      const fn = jest.fn();
+
+      channel.on(eventName, fn);
+      expect(channel.listeners(eventName).length).toBe(1);
+      channel.off(eventName, fn);
+      expect(channel.listeners(eventName).length).toBe(0);
     });
   });
 
@@ -61,7 +73,7 @@ describe('Channel', () => {
       const eventName = 'event1';
       const listenerInputData = ['string1', 'string2', 'string3'];
       let listenerOutputData: string[] = null;
-      const mockListener: Listener = data => {
+      const mockListener: Listener = (data) => {
         listenerOutputData = data;
       };
 
@@ -82,25 +94,32 @@ describe('Channel', () => {
       expect(listenerOutputData).toEqual(listenerInputData);
     });
 
+    it('should be callable with options on the event', () => {
+      const eventName = 'event1';
+      const listenerInputData = [{ event: {}, options: { depth: 1 } }];
+      let listenerOutputData: any = null;
+
+      channel.addListener(eventName, (...data) => {
+        listenerOutputData = data;
+      });
+      const sendSpy = jest.fn();
+      // @ts-ignore
+      channel.transport.send = sendSpy;
+      channel.emit(eventName, ...listenerInputData);
+      expect(listenerOutputData).toEqual(listenerInputData);
+      expect(sendSpy.mock.calls[0][1]).toEqual({ depth: 1 });
+    });
+
     it('should use setImmediate if async is true', () => {
       channel = new Channel({ async: true, transport });
       channel.addListener('event1', jest.fn());
     });
   });
 
-  describe('method:addPeerListener', () => {
-    it('should add a listener and set ignorePeer to true', () => {
-      const eventName = 'event1';
-
-      channel.addPeerListener(eventName, jest.fn());
-      expect(channel.listeners(eventName)[0].ignorePeer).toBe(true);
-    });
-  });
-
   describe('method:eventNames', () => {
     it('should return a list of all registered events', () => {
       const eventNames = ['event1', 'event2', 'event3'];
-      eventNames.forEach(eventName => channel.addListener(eventName, jest.fn()));
+      eventNames.forEach((eventName) => channel.addListener(eventName, jest.fn()));
 
       expect(channel.eventNames()).toEqual(eventNames);
     });
@@ -112,14 +131,15 @@ describe('Channel', () => {
         { eventName: 'event1', listeners: [jest.fn(), jest.fn(), jest.fn()], listenerCount: 0 },
         { eventName: 'event2', listeners: [jest.fn()], listenerCount: 0 },
       ];
-      events.forEach(event => {
-        event.listeners.forEach(listener => {
+      events.forEach((event) => {
+        event.listeners.forEach((listener) => {
           channel.addListener(event.eventName, listener);
+          // eslint-disable-next-line no-plusplus, no-param-reassign
           event.listenerCount++;
         });
       });
 
-      events.forEach(event => {
+      events.forEach((event) => {
         expect(channel.listenerCount(event.eventName)).toBe(event.listenerCount);
       });
     });
@@ -142,7 +162,7 @@ describe('Channel', () => {
         listenerOutputData = data;
       };
 
-      channel.once(eventName, args => mockListener(args));
+      channel.once(eventName, (args) => mockListener(args));
       channel.emit(eventName, listenerInputData);
 
       expect(listenerOutputData).toEqual(listenerInputData);
@@ -164,8 +184,8 @@ describe('Channel', () => {
       const listeners1 = [jest.fn(), jest.fn(), jest.fn()];
       const listeners2 = [jest.fn()];
 
-      listeners1.forEach(fn => channel.addListener(eventName1, fn));
-      listeners2.forEach(fn => channel.addListener(eventName2, fn));
+      listeners1.forEach((fn) => channel.addListener(eventName1, fn));
+      listeners2.forEach((fn) => channel.addListener(eventName2, fn));
       channel.removeAllListeners();
 
       expect(channel.listenerCount(eventName1)).toBe(0);
@@ -176,7 +196,7 @@ describe('Channel', () => {
       const eventName = 'event1';
       const listeners = [jest.fn(), jest.fn(), jest.fn()];
 
-      listeners.forEach(fn => channel.addListener(eventName, fn));
+      listeners.forEach((fn) => channel.addListener(eventName, fn));
       expect(channel.listenerCount(eventName)).toBe(listeners.length);
 
       channel.removeAllListeners(eventName);
@@ -190,9 +210,9 @@ describe('Channel', () => {
       const listenerToBeRemoved = jest.fn();
       const listeners = [jest.fn(), jest.fn()];
       const findListener = (listener: Listener) =>
-        channel.listeners(eventName).find(_listener => _listener === listener);
+        channel.listeners(eventName).find((_listener) => _listener === listener);
 
-      listeners.forEach(fn => channel.addListener(eventName, fn));
+      listeners.forEach((fn) => channel.addListener(eventName, fn));
       channel.addListener(eventName, listenerToBeRemoved);
       expect(findListener(listenerToBeRemoved)).toBe(listenerToBeRemoved);
 

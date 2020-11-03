@@ -1,107 +1,59 @@
-const error = 2;
-const warn = 1;
-const ignore = 0;
 module.exports = {
   root: true,
-  extends: [
-    'airbnb',
-    'plugin:jest/recommended',
-    'plugin:import/react-native',
-    'prettier',
-    'prettier/react',
-  ],
-  plugins: ['prettier', 'jest', 'import', 'react', 'jsx-a11y', 'json', 'html'],
-  parser: 'babel-eslint',
-  parserOptions: { ecmaVersion: 8, sourceType: 'module' },
-  env: { es6: true, node: true, 'jest/globals': true },
-  settings: {
-    'import/core-modules': ['enzyme'],
-    'import/ignore': ['node_modules\\/(?!@storybook)'],
-    'import/resolver': { node: { extensions: ['.js', '.ts'] } },
-    'html/html-extensions': ['.html'],
-  },
-  rules: {
-    'prettier/prettier': [warn],
-    'no-debugger': process.env.NODE_ENV === 'production' ? error : ignore,
-    'class-methods-use-this': ignore,
-    'import/extensions': [
-      error,
-      'always',
-      {
-        js: 'never',
-        ts: 'never',
-        mjs: 'never',
-      },
-    ],
-    'import/no-extraneous-dependencies': [
-      error,
-      {
-        devDependencies: [
-          'examples/**',
-          'examples-native/**',
-          '**/example/**',
-          '*.js',
-          '**/*.test.js',
-          '**/*.stories.js',
-          '**/scripts/*.js',
-          '**/stories/**/*.js',
-          '**/__tests__/**/*.js',
-          '**/.storybook/**/*.js',
-        ],
-        peerDependencies: true,
-      },
-    ],
-    'import/prefer-default-export': ignore,
-    'import/default': error,
-    'import/named': error,
-    'import/namespace': error,
-    'react/jsx-filename-extension': [
-      warn,
-      {
-        extensions: ['.js', '.jsx', '.tsx'],
-      },
-    ],
-    'react/jsx-no-bind': [
-      error,
-      {
-        ignoreDOMComponents: true,
-        ignoreRefs: true,
-        allowArrowFunctions: true,
-        allowFunctions: true,
-        allowBind: true,
-      },
-    ],
-    'jsx-a11y/accessible-emoji': ignore,
-    'jsx-a11y/label-has-associated-control': [
-      warn,
-      {
-        labelComponents: ['CustomInputLabel'],
-        labelAttributes: ['label'],
-        controlComponents: ['CustomInput'],
-        depth: 3,
-      },
-    ],
-    'react/no-unescaped-entities': ignore,
-    'jsx-a11y/label-has-for': [error, { required: { some: ['nesting', 'id'] } }],
-    'jsx-a11y/anchor-is-valid': [
-      error,
-      {
-        components: ['A', 'LinkTo', 'Link'],
-        specialLink: ['overrideParams', 'kind', 'story', 'to'],
-      },
-    ],
-    'no-underscore-dangle': [
-      error,
-      { allow: ['__STORYBOOK_CLIENT_API__', '__STORYBOOK_ADDONS_CHANNEL__'] },
-    ],
-  },
+  extends: ['@storybook/eslint-config-storybook'],
   overrides: [
     {
-      files: ['**/__tests__/**', '**/*.test.js', '**/*.stories.js', '**/storyshots/**/stories/**'],
+      files: [
+        '**/__tests__/**',
+        'scripts/**',
+        '**/__testfixtures__/**',
+        '**/*.test.*',
+        '**/*.stories.*',
+        '**/storyshots/**/stories/**',
+        'docs/src/new-components/lib/StoryLinkWrapper.js',
+        'docs/src/stories/**',
+      ],
       rules: {
-        'import/no-extraneous-dependencies': ignore,
+        '@typescript-eslint/no-empty-function': 'off',
+        'import/no-extraneous-dependencies': 'off',
       },
     },
-    { files: '**/.storybook/config.js', rules: { 'global-require': ignore } },
+    {
+      files: ['**/__testfixtures__/**'],
+      rules: {
+        'react/forbid-prop-types': 'off',
+        'react/no-unused-prop-types': 'off',
+        'react/require-default-props': 'off',
+      },
+    },
+    { files: '**/.storybook/config.js', rules: { 'global-require': 'off' } },
+    { files: 'cypress/**', rules: { 'jest/expect-expect': 'off' } },
+    {
+      files: ['**/*.stories.*'],
+      rules: {
+        'no-console': 'off',
+      },
+    },
+    {
+      files: ['**/*.tsx', '**/*.ts'],
+      rules: {
+        'react/prop-types': 'off', // we should use types
+        'no-dupe-class-members': 'off', // this is called overloads in typescript
+      },
+    },
+    {
+      files: ['**/*.d.ts'],
+      rules: {
+        'vars-on-top': 'off',
+        'no-var': 'off', // this is how typescript works
+        'spaced-comment': 'off',
+      },
+    },
+    {
+      files: ['**/mithril/**/*'],
+      rules: {
+        'react/no-unknown-property': 'off', // Need to deactivate otherwise eslint replaces some unknown properties with React ones
+      },
+    },
   ],
 };

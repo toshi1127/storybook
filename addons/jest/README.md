@@ -2,9 +2,9 @@
 
 Brings Jest results in storybook.
 
-[Framework Support](https://github.com/storybooks/storybook/blob/master/ADDONS_SUPPORT.md)
+[Framework Support](https://github.com/storybookjs/storybook/blob/master/ADDONS_SUPPORT.md)
 
-[![Storybook Jest Addon Demo](https://raw.githubusercontent.com/storybooks/storybook-addon-jest/master/storybook-addon-jest.gif)](http://storybooks-official.netlify.com/?selectedKind=Addons%7Cjest&selectedStory=withTests&full=0&addons=1&stories=1&panelRight=0&addonPanel=storybook%2Ftests%2Fpanel)
+[![Storybook Jest Addon Demo](https://raw.githubusercontent.com/storybookjs/storybook/next/addons/jest/docs/storybook-addon-jest.gif)](http://storybooks-official.netlify.com/?selectedKind=Addons%7Cjest&selectedStory=withTests&full=0&addons=1&stories=1&panelRight=0&addonPanel=storybook%2Ftests%2Fpanel)
 
 > Checkout the above [Live Storybook](http://storybooks-official.netlify.com/?selectedKind=Addons%7Cjest&selectedStory=withTests&full=0&addons=1&stories=1&panelRight=0&addonPanel=storybook%2Ftests%2Fpanel).
 
@@ -12,7 +12,7 @@ Brings Jest results in storybook.
 
 ### Install
 
-`yarn add --save-dev @storybook/addon-jest --dev`
+`npm install --save-dev @storybook/addon-jest`
 
 or
 
@@ -26,19 +26,19 @@ When running **Jest**, be sure to save the results in a json file:
 
 ```js
 "scripts": {
-  "test:generate-output": "jest --json --outputFile=jest-test-results.json"
+  "test:generate-output": "jest --json --outputFile=.jest-test-results.json"
 }
 ```
 
 You may want to add it the result file to `.gitignore`, since it's a generated file:
 
 ```
-jest-test-results.json
+.jest-test-results.json
 ```
 
 But much like lockfiles and snapshots checking-in generated files can have certain advantages as well. It's up to you.
 We recommend to **do** check in the test results file so starting storybook from an clean git clone doesn't require running all tests first,
-but this can mean you'll experience merge conflicts on this file in the future. (_re-generating this file is super easy though, just like lockfiles and snapshots_)
+but this can mean you'll experience merge conflicts on this file in the future. (_re-generating this file is very similar to re-generating lockfiles and snapshots_)
 
 ## Generating the test results
 
@@ -69,10 +69,12 @@ You could create a `prebuild:storybook` npm script, which will never fail by app
 
 ### Register
 
-Register addon at `.storybook/addons.js`
+within `.storybook/main.js`:
 
 ```js
-import '@storybook/addon-jest/register';
+module.exports = {
+  addons: ['@storybook/addon-jest'],
+};
 ```
 
 ## Usage
@@ -85,18 +87,18 @@ In your `story.js`
 import results from '../.jest-test-results.json';
 import { withTests } from '@storybook/addon-jest';
 
-storiesOf('MyComponent', module)
-  .addDecorator(withTests({ results }))
-  .add(
-    'This story shows test results from MyComponent.test.js and MyOtherComponent.test.js',
-    () => <div>Jest results in storybook</div>,
-    {
-      jest: ['MyComponent.test.js', 'MyOtherComponent.test.js'],
-    }
-  );
+export default {
+  title: 'MyComponent',
+  decorators: [withTests({ results })],
+};
+
+export const defaultView = () => <div>Jest results in storybook</div>;
+defaultView.parameters = {
+  jest: ['MyComponent.test.js', 'MyOtherComponent.test.js'],
+};
 ```
 
-Or in order to avoid importing `.jest-test-results.json` in each story, simply add the decorator in your `.storybook/config.js` and results will display for stories that you have set the `jest` parameter on:
+Or in order to avoid importing `.jest-test-results.json` in each story, add the decorator in your `.storybook/preview.js` and results will display for stories that you have set the `jest` parameter on:
 
 ```js
 import { addDecorator } from '@storybook/react'; // <- or your view layer
@@ -114,13 +116,16 @@ addDecorator(
 Then in your story:
 
 ```js
-storiesOf('MyComponent', module)
-  // Use .addParameters if you want the same tests displayed for all stories of the component
-  .addParameters({ jest: ['MyComponent', 'MyOtherComponent'] })
-  .add(
-    'This story shows test results from MyComponent.test.js and MyOtherComponent.test.js',
-    () => <div>Jest results in storybook</div>
-  );
+import React from 'react';
+
+export default {
+  title: 'MyComponent',
+};
+
+export const defaultView = () => <div>Jest results in storybook</div>;
+defaultView.parameters = {
+  jest: ['MyComponent.test.js', 'MyOtherComponent.test.js'],
+};
 ```
 
 ### Disabling
@@ -128,9 +133,16 @@ storiesOf('MyComponent', module)
 You can disable the addon for a single story by setting the `jest` parameter to `{disable: true}`:
 
 ```js
-storiesOf('MyComponent', module).add('Story', () => <div>Jest results disabled here</div>, {
+import React from 'react';
+
+export default {
+  title: 'MyComponent',
+};
+
+export const defaultView = () => <div>Jest results in storybook</div>;
+defaultView.parameters = {
   jest: { disable: true },
-});
+};
 ```
 
 ### withTests(options)
@@ -140,7 +152,7 @@ storiesOf('MyComponent', module).add('Story', () => <div>Jest results disabled h
 
 ## Usage with Angular
 
-Assuming that you have created test files `my.component.spec.ts` and `my-other.comonent.spec.ts`
+Assuming that you have created test files `my.component.spec.ts` and `my-other.component.spec.ts`
 
 Configure Jest with [jest-preset-angular](https://www.npmjs.com/package/jest-preset-angular)
 
@@ -153,13 +165,13 @@ declare module '*.json' {
 }
 ```
 
-In your `.storybook/config.ts`:
+In your `.storybook/preview.ts`:
 
 ```ts
 import { addDecorator } from '@storybook/angular';
 import { withTests } from '@storybook/addon-jest';
 
-import * as results from '../.jest-test-results.json';
+import results from '../.jest-test-results.json';
 
 addDecorator(
   withTests({
@@ -169,18 +181,7 @@ addDecorator(
 );
 ```
 
-Then in your story:
-
-```js
-storiesOf('MyComponent', module)
-  .addParameters({ jest: ['my.component', 'my-other.component'] })
-  .add(
-    'This story shows test results from my.component.spec.ts and my-other.component.spec.ts',
-    () => <div>Jest results in storybook</div>
-  );
-```
-
-##### Example [here](https://github.com/storybooks/storybook/tree/master/examples/angular-cli)
+##### Example [here](https://github.com/storybookjs/storybook/tree/master/examples/angular-cli)
 
 ## TODO
 
@@ -193,7 +194,7 @@ storiesOf('MyComponent', module)
 
 ## Contributing
 
-Every ideas and contributions are welcomed.
+All ideas and contributions are welcomed.
 
 ## Licence
 

@@ -1,22 +1,29 @@
-import uuid from 'uuid/v1';
+import { v4 as uuidv4 } from 'uuid';
 import { addons } from '@storybook/addons';
 import { EVENT_ID } from '../constants';
 import { ActionDisplay, ActionOptions, HandlerFunction } from '../models';
+import { config } from './configureActions';
 
 export function action(name: string, options: ActionOptions = {}): HandlerFunction {
   const actionOptions = {
+    ...config,
     ...options,
   };
 
-  // tslint:disable-next-line:no-shadowed-variable
-  const handler = function action(...args: any[]) {
+  const handler = function actionHandler(...args: any[]) {
     const channel = addons.getChannel();
-    const id = uuid();
+    const id = uuidv4();
+    const minDepth = 5; // anything less is really just storybook internals
+
     const actionDisplayToEmit: ActionDisplay = {
       id,
       count: 0,
       data: { name, args },
-      options: actionOptions,
+      options: {
+        ...actionOptions,
+        depth: minDepth + (actionOptions.depth || 3),
+        allowFunction: actionOptions.allowFunction || false,
+      },
     };
     channel.emit(EVENT_ID, actionDisplayToEmit);
   };

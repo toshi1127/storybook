@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Storyshots Custom|Decorator for Vue render 1`] = `
+exports[`Storyshots Custom/Decorator for Vue Render 1`] = `
 <div
   style="border: medium solid blue;"
 >
@@ -12,12 +12,13 @@ exports[`Storyshots Custom|Decorator for Vue render 1`] = `
       style="color: pink; border-color: pink;"
     >
       renders component: MyButton!
+
     </button>
   </div>
 </div>
 `;
 
-exports[`Storyshots Custom|Decorator for Vue template 1`] = `
+exports[`Storyshots Custom/Decorator for Vue Template 1`] = `
 <div
   style="border: medium solid blue;"
 >
@@ -29,7 +30,42 @@ exports[`Storyshots Custom|Decorator for Vue template 1`] = `
       style="color: rgb(66, 185, 131); border-color: #42b983;"
     >
       MyButton with template!
+
     </button>
+  </div>
+</div>
+`;
+
+exports[`Storyshots Custom/Decorator for Vue With Data 1`] = `
+<div
+  style="border: medium solid blue;"
+>
+  <div
+    style="border: medium solid red;"
+  >
+    <pre>
+      {
+  "id": "custom-decorator-for-vue--with-data",
+  "kind": "Custom/Decorator for Vue",
+  "name": "With Data",
+  "story": "With Data",
+  "parameters": {
+    "docs": {
+      "iframeHeight": "60px"
+    },
+    "globalParameter": "globalParameter",
+    "framework": "vue",
+    "args": {},
+    "argTypes": {},
+    "__id": "custom-decorator-for-vue--with-data",
+    "__isArgsStory": true
+  },
+  "args": {},
+  "argTypes": {},
+  "globals": {},
+  "customContext": 52
+}
+    </pre>
   </div>
 </div>
 `;

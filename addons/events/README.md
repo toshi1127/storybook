@@ -1,43 +1,40 @@
 # Storybook Addon Events
 
-This [storybook](https://storybooks.js.org) ([source](https://github.com/storybooks/storybook)) addon allows you to add events for your stories.
+This [storybook](https://storybooks.js.org) ([source](https://github.com/storybookjs/storybook)) addon allows you to add events for your stories.
 
-[Framework Support](https://github.com/storybooks/storybook/blob/master/ADDONS_SUPPORT.md)
+[Framework Support](https://github.com/storybookjs/storybook/blob/master/ADDONS_SUPPORT.md)
 
 [Storybook Addon Events Live Demo](https://z4o4z.github.io/storybook-addon-events/index.html)
 
 ### Getting Started
 
 ```sh
-npm i --save-dev @storybook/addon-events
+npm i --save-dev @storybook/addon-events event-emitter
 ```
 
-Then create a file called `addons.js` in your storybook config.
-
-Add following content to it:
+within `.storybook/main.js`:
 
 ```js
-import '@storybook/addon-actions/register';
-import '@storybook/addon-links/register';
-import '@storybook/addon-events/register';
+module.exports = {
+  addons: ['@storybook/addon-events']
+}
 ```
 
 Then write your stories like this:
 
 ```js
-import { storiesOf } from '@storybook/react';
 import withEvents from '@storybook/addon-events';
-import EventEmiter from 'event-emiter';
+import EventEmitter from 'event-emitter';
 
 import Logger from './Logger';
 import * as EVENTS from './events';
 
-const emiter = new EventEmiter();
-const emit = emiter.emit.bind(emiter);
+const emitter = new EventEmitter();
+const emit = emitter.emit.bind(emitter);
 
-
-storiesOf('WithEvents', module)
-  .addDecorator(
+export default {
+  title: 'withEvents',
+  decorators: [
     withEvents({
       emit,
       events: [
@@ -87,7 +84,11 @@ storiesOf('WithEvents', module)
           ],
         },
       ]
-    })
-  )
-  .add('Logger', () => <Logger emiter={emiter} />);
+    }),
+  ],
+}
+
+export const defaultView = () => (
+  <Logger emitter={emitter} />
+);
 ```

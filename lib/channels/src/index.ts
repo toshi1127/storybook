@@ -1,7 +1,10 @@
+import deprecate from 'util-deprecate';
+import dedent from 'ts-dedent';
+
 export type ChannelHandler = (event: ChannelEvent) => void;
 
 export interface ChannelTransport {
-  send(event: ChannelEvent): void;
+  send(event: ChannelEvent, options?: any): void;
   setHandler(handler: ChannelHandler): void;
 }
 
@@ -13,8 +16,6 @@ export interface ChannelEvent {
 
 export interface Listener {
   (...args: any[]): void;
-
-  ignorePeer?: boolean;
 }
 
 interface EventsKeyValue {
@@ -28,23 +29,25 @@ interface ChannelArgs {
 
 const generateRandomId = () => {
   // generates a random 13 character string
-  return Math.random()
-    .toString(16)
-    .slice(2);
+  return Math.random().toString(16).slice(2);
 };
 
 export class Channel {
   readonly isAsync: boolean;
 
   private sender = generateRandomId();
+
   private events: EventsKeyValue = {};
+
+  private data: Record<string, any> = {};
+
   private readonly transport: ChannelTransport;
 
   constructor({ transport, async = false }: ChannelArgs = {}) {
     this.isAsync = async;
     if (transport) {
       this.transport = transport;
-      this.transport.setHandler(event => this.handleEvent(event));
+      this.transport.setHandler((event) => this.handleEvent(event));
     }
   }
 
@@ -57,20 +60,27 @@ export class Channel {
     this.events[eventName].push(listener);
   }
 
-  addPeerListener(eventName: string, listener: Listener) {
-    const peerListener = listener;
-    peerListener.ignorePeer = true;
-    this.addListener(eventName, peerListener);
-  }
+  addPeerListener = deprecate(
+    (eventName: string, listener: Listener) => {
+      this.addListener(eventName, listener);
+    },
+    dedent`
+      channel.addPeerListener is deprecated
+    `
+  );
 
-  emit(eventName: string, ...args: any[]) {
+  emit(eventName: string, ...args: any) {
     const event: ChannelEvent = { type: eventName, args, from: this.sender };
+    let options = {};
+    if (args.length >= 1 && args[0] && args[0].options) {
+      options = args[0].options;
+    }
 
     const handler = () => {
       if (this.transport) {
-        this.transport.send(event);
+        this.transport.send(event, options);
       }
-      this.handleEvent(event, true);
+      this.handleEvent(event);
     };
 
     if (this.isAsync) {
@@ -79,6 +89,10 @@ export class Channel {
     } else {
       handler();
     }
+  }
+
+  last(eventName: string) {
+    return this.data[eventName];
   }
 
   eventNames() {
@@ -92,7 +106,7 @@ export class Channel {
 
   listeners(eventName: string): Listener[] | undefined {
     const listeners = this.events[eventName];
-    return listeners ? listeners : undefined;
+    return listeners || undefined;
   }
 
   once(eventName: string, listener: Listener) {
@@ -111,7 +125,7 @@ export class Channel {
   removeListener(eventName: string, listener: Listener) {
     const listeners = this.listeners(eventName);
     if (listeners) {
-      this.events[eventName] = listeners.filter(l => l !== listener);
+      this.events[eventName] = listeners.filter((l) => l !== listener);
     }
   }
 
@@ -119,11 +133,18 @@ export class Channel {
     this.addListener(eventName, listener);
   }
 
-  private handleEvent(event: ChannelEvent, isPeer = false) {
+  off(eventName: string, listener: Listener) {
+    this.removeListener(eventName, listener);
+  }
+
+  private handleEvent(event: ChannelEvent) {
     const listeners = this.listeners(event.type);
-    if (listeners && (isPeer || event.from !== this.sender)) {
-      listeners.forEach(fn => !(isPeer && fn.ignorePeer) && fn(...event.args));
+    if (listeners && listeners.length) {
+      listeners.forEach((fn) => {
+        fn.apply(event, event.args);
+      });
     }
+    this.data[event.type] = event.args;
   }
 
   private onceListener(eventName: string, listener: Listener) {

@@ -1,69 +1,96 @@
 import React, { FunctionComponent } from 'react';
 import { styled } from '@storybook/theming';
-
-import { Icons } from '@storybook/components';
+import { Badge } from '@storybook/components';
 import { CheckResult } from 'axe-core';
-
-const impactColors = {
-  minor: '#f1c40f',
-  moderate: '#e67e22',
-  serious: '#e74c3c',
-  critical: '#c0392b',
-  success: '#2ecc71',
-};
+import { SizeMe } from 'react-sizeme';
 
 const List = styled.div({
   display: 'flex',
   flexDirection: 'column',
-  padding: '4px',
+  paddingBottom: 4,
+  paddingRight: 4,
+  paddingTop: 4,
   fontWeight: '400',
 } as any);
 
-const Item = styled.div({
-  display: 'flex',
-  flexDirection: 'row',
-  marginBottom: '6px',
+const Item = styled.div<{ elementWidth: number }>(({ elementWidth }) => {
+  const maxWidthBeforeBreak = 407;
+  return {
+    flexDirection: elementWidth > maxWidthBeforeBreak ? 'row' : 'inherit',
+    marginBottom: elementWidth > maxWidthBeforeBreak ? 6 : 12,
+    display: elementWidth > maxWidthBeforeBreak ? 'flex' : 'block',
+  };
+});
+
+const StyledBadge = styled(Badge)({
+  padding: '2px 8px',
+  marginBottom: 3,
+  minWidth: 65,
+  maxWidth: 'fit-content',
+  width: '100%',
+  textAlign: 'center',
 });
 
 const Message = styled.div({
-  paddingLeft: '6px',
+  paddingLeft: 6,
+  paddingRight: 23,
 });
 
-const Status = styled.div(({ passes, impact }: { passes: boolean; impact: string }) => ({
-  display: 'inline-flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  color: passes ? impactColors.success : (impactColors as any)[impact],
-  '& > svg': {
-    height: '16px',
-    width: '16px',
-  },
-}));
+export enum ImpactValue {
+  MINOR = 'minor',
+  MODERATE = 'moderate',
+  SERIOUS = 'serious',
+  CRITICAL = 'critical',
+}
 
 interface RuleProps {
   rule: CheckResult;
-  passes: boolean;
 }
 
-const Rule: FunctionComponent<RuleProps> = ({ rule, passes }) => (
-  <Item>
-    <Status passes={passes || undefined} impact={rule.impact}>
-      {passes ? <Icons icon="check" /> : <Icons icon="cross" />}
-    </Status>
-    <Message>{rule.message}</Message>
-  </Item>
-);
+const formatSeverityText = (severity: string) => {
+  return severity.charAt(0).toUpperCase().concat(severity.slice(1));
+};
+
+const Rule: FunctionComponent<RuleProps> = ({ rule }) => {
+  let badgeType: any = null;
+  switch (rule.impact) {
+    case ImpactValue.CRITICAL:
+      badgeType = 'critical';
+      break;
+    case ImpactValue.SERIOUS:
+      badgeType = 'negative';
+      break;
+    case ImpactValue.MODERATE:
+      badgeType = 'warning';
+      break;
+    case ImpactValue.MINOR:
+      badgeType = 'neutral';
+      break;
+    default:
+      break;
+  }
+  return (
+    <SizeMe refreshMode="debounce">
+      {({ size }: { size: { width: number; height: number } }) => (
+        <Item elementWidth={size.width}>
+          <StyledBadge status={badgeType}>{formatSeverityText(rule.impact)}</StyledBadge>
+          <Message>{rule.message}</Message>
+        </Item>
+      )}
+    </SizeMe>
+  );
+};
 
 interface RulesProps {
   rules: CheckResult[];
-  passes: boolean;
 }
 
-export const Rules: FunctionComponent<RulesProps> = ({ rules, passes }) => {
+export const Rules: FunctionComponent<RulesProps> = ({ rules }) => {
   return (
     <List>
       {rules.map((rule, index) => (
-        <Rule passes={passes} rule={rule} key={index} />
+        // eslint-disable-next-line react/no-array-index-key
+        <Rule rule={rule} key={index} />
       ))}
     </List>
   );

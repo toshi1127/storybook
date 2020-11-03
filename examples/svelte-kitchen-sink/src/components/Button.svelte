@@ -1,10 +1,20 @@
-<button
-  class="button {roundedClass}"
-  on:click="onClick(event)">
-  <strong>{rounded ? 'Round' : 'Square'} corners</strong><br>
-  {text}
-  <slot></slot>
-</button>
+<script>
+  import { createEventDispatcher, afterUpdate } from 'svelte';
+  export let text = '';
+  export let rounded = true;
+
+  const dispatch = createEventDispatcher();
+
+  function onClick(event) {
+    rounded = !rounded;
+
+    dispatch('click', event);
+  }
+
+  afterUpdate(() => {
+    dispatch('afterUpdate');
+  });
+</script>
 
 <style>
   .rounded {
@@ -19,30 +29,9 @@
   }
 </style>
 
-<script>
-  export default {
-    data () {
-      return {
-        count: 0,
-        text: '', // component supports both <slot> and text prop.
-        rounded: true
-      };
-    },
-
-    computed: {
-      roundedClass({ rounded }) {
-        return rounded ? 'rounded' : ''
-      }
-    },
-
-    methods: {
-      onClick(event) {
-        const {rounded} = this.get();
-
-        this.set({rounded: !rounded});
-
-        this.fire('click', event)
-      }
-    }
-  }
-</script>
+<button class="button" class:rounded on:click={onClick}>
+  <strong>{rounded ? 'Round' : 'Square'} corners</strong>
+  <br />
+  {text}
+  <slot />
+</button>
